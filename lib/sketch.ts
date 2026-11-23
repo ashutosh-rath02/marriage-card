@@ -7,6 +7,7 @@
 // bake() packs them into one RGBA texture: rgb = wash, a = mask ? 0.5 + ink/2 : 0.
 
 import * as THREE from "three";
+import { G } from "./fold";
 
 export type Pt = [number, number];
 export type RNG = () => number;
@@ -34,17 +35,22 @@ export class Sketch {
   /** Named clickable areas (bounding boxes in 0..1 canvas coords), e.g. where a journal lives. */
   readonly marks: Record<string, [number, number, number, number]> = {};
 
-  constructor(ink: CanvasRenderingContext2D, wash: CanvasRenderingContext2D, mask: CanvasRenderingContext2D, size: number, seed: number) {
+  /** Canvas height in px and the px offset of art y = 0 (walls reach up over their arch). */
+  CH: number;
+  yOff: number;
+  constructor(ink: CanvasRenderingContext2D, wash: CanvasRenderingContext2D, mask: CanvasRenderingContext2D, size: number, seed: number, canvasH = size) {
     this.ink = ink;
     this.wash = wash;
     this.mask = mask;
     this.S = size;
+    this.CH = canvasH;
+    this.yOff = canvasH - size;
     this.r = rng(seed);
     this.k = size / 768;
   }
 
   private px([x, y]: Pt): Pt {
-    return [x * this.S, y * this.S];
+    return [x * this.S, y * this.S + this.yOff];
   }
 
   /** Wobbly polyline through normalised points. */
@@ -224,7 +230,7 @@ export class Sketch {
 
   maskAll() {
     this.mask.fillStyle = "#fff";
-    this.mask.fillRect(0, 0, this.S, this.S);
+    this.mask.fillRect(0, 0, this.S, this.CH);
   }
 
   /** Fill + outline in one go. mask=true makes it part of a pop-up's silhouette. */
@@ -421,25 +427,28 @@ export class Sketch {
 
   /** Watercolour wash over the whole sheet. */
   washAll(color: string, alpha = 0.85) {
-    this.fill(this.rectPts(-0.02, -0.02, 1.04, 1.04), color, { alpha, jitter: 0 });
+    const top = -this.yOff / this.S - 0.02;
+    this.fill(this.rectPts(-0.02, top, 1.04, 1.02 - top), color, { alpha, jitter: 0 });
   }
 }
 
 // ---------------------------------------------------------------------------
 
 type Scratch = { ink: HTMLCanvasElement; wash: HTMLCanvasElement; mask: HTMLCanvasElement; tmp: HTMLCanvasElement; tmp2: HTMLCanvasElement };
-const scratch = new Map<number, Scratch>();
+const scratch = new Map<string, Scratch>();
 
-function getScratch(size: number): Scratch {
-  let s = scratch.get(size);
+function getScratch(size: number, h = size): Scratch {
+  const key = `${size}x${h}`;
+  let s = scratch.get(key);
   if (!s) {
     const mk = () => {
       const c = document.createElement("canvas");
-      c.width = c.height = size;
+      c.width = size;
+      c.height = h;
       return c;
     };
     s = { ink: mk(), wash: mk(), mask: mk(), tmp: mk(), tmp2: mk() };
-    scratch.set(size, s);
+    scratch.set(key, s);
   }
   return s;
 }
@@ -480,32 +489,33 @@ function cutOut(sc: Scratch, size: number, r: number) {
  * Draw a surface and pack it into a single texture.
  * full=true marks every pixel as paper (walls, floors); pop-ups leave it to their shapes.
  */
-export function bake(size: number, seed: number, font: string, full: boolean, draw: (s: Sketch) => void, halo = 0): THREE.DataTexture {
-  const sc = getScratch(size);
+export function bake(size: number, seed: number, font: string, full: boolean, draw: (s: Sketch) => void, halo = 0, tall = false): THREE.DataTexture {
+  const h = tall ? Math.round(size * (1 + G)) : size;
+  const sc = getScratch(size, h);
   const ink = sc.ink.getContext("2d", { willReadFrequently: true })!;
   const wash = sc.wash.getContext("2d", { willReadFrequently: true })!;
   const mask = sc.mask.getContext("2d", { willReadFrequently: true })!;
-  ink.clearRect(0, 0, size, size);
-  mask.clearRect(0, 0, size, size);
+  ink.clearRect(0, 0, size, h);
+  mask.clearRect(0, 0, size, h);
   wash.globalCompositeOperation = "source-over";
   wash.globalAlpha = 1;
   wash.fillStyle = "#fff";
-  wash.fillRect(0, 0, size, size);
+  wash.fillRect(0, 0, size, h);
 
-  const s = new Sketch(ink, wash, mask, size, seed);
+  const s = new Sketch(ink, wash, mask, size, seed, h);
   s.fontFamily = font;
   if (full) s.maskAll();
   draw(s);
   if (halo > 0) cutOut(sc, size, halo * (size / 768));
 
-  const I = ink.getImageData(0, 0, size, size).data;
-  const W = wash.getImageData(0, 0, size, size).data;
-  const M = mask.getImageData(0, 0, size, size).data;
-  const out = new Uint8Array(size * size * 4);
+  const I = ink.getImageData(0, 0, size, h).data;
+  const W = wash.getImageData(0, 0, size, h).data;
+  const M = mask.getImageData(0, 0, size, h).data;
+  const out = new Uint8Array(size * h * 4);
   // DataTextures are not flipped on upload, so flip rows here (canvas y-down → uv v-up).
-  for (let y = 0; y < size; y++) {
+  for (let y = 0; y < h; y++) {
     const src = y * size * 4;
-    const dst = (size - 1 - y) * size * 4;
+    const dst = (h - 1 - y) * size * 4;
     for (let x = 0; x < size * 4; x += 4) {
       const i = src + x;
       const o = dst + x;
@@ -515,7 +525,7 @@ export function bake(size: number, seed: number, font: string, full: boolean, dr
       out[o + 3] = M[i + 3] > 127 ? 128 + (I[i + 3] >> 1) : 0;
     }
   }
-  const tex = new THREE.DataTexture(out, size, size, THREE.RGBAFormat);
+  const tex = new THREE.DataTexture(out, size, h, THREE.RGBAFormat);
   tex.userData.marks = s.marks;
   tex.generateMipmaps = true;
   tex.minFilter = THREE.LinearMipmapLinearFilter;

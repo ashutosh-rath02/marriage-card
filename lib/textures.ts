@@ -12,14 +12,14 @@ const POP_CUTOUT = 1024;
 /** Draws every surface of the book. Indexed by logical room (0 = bedroom). */
 export function buildTextures(font: string): BookTextures {
   const rooms = ROOMS.map((room, i) => ({
-    left: bake(WALL, 100 + i * 10, font, true, room.left),
-    right: bake(WALL, 101 + i * 10, font, true, room.right),
+    left: bake(WALL, 100 + i * 10, font, true, room.left, 0, true),
+    right: bake(WALL, 101 + i * 10, font, true, room.right, 0, true),
     floor: bake(WALL, 102 + i * 10, font, true, room.floor),
     popups: room.popups.map((p, j) => bake(p.halo ? POP_CUTOUT : POP, 200 + i * 10 + j, font, false, p.draw, p.halo ?? 0)),
   }));
   return {
     rooms,
-    front: bake(WALL, 7, font, true, drawFrontCover),
-    back: bake(WALL, 8, font, true, drawBackCover),
+    front: bake(WALL, 7, font, true, drawFrontCover, 0, true),
+    back: bake(WALL, 8, font, true, drawBackCover, 0, true),
   };
 }

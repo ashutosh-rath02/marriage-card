@@ -36,7 +36,7 @@ const fragment = /* glsl */ `
 
   void main() {
     // the peak above the walls carries on the wall's top edge
-    vec4 t = texture2D(uTex, vec2(vUv.x, min(vUv.y, 0.996)));
+    vec4 t = texture2D(uTex, vec2(vUv.x, min(vUv.y, 0.998)));
     if (t.a < 0.25) discard;
     float ink = clamp((t.a - 0.5) * 2.0, 0.0, 1.0);
     vec3 wash = t.rgb;

@@ -9,6 +9,11 @@ export const N = 4; // rooms (must match ROOMS in invite.ts: one per wedding eve
 export const L = 1; // page width (spine to outer edge)
 export const H = 1; // page height (the walls)
 export const G = 0.4; // height of the peaked top above the walls (pages are house-shaped)
+/** The roof's lift at t (0..1 across the page), 0..1 of its height: an ogee arch with 7 scalloped lobes. */
+export const roofLift = (t: number) => {
+  const u = Math.abs(2 * t - 1);
+  return ((1 - Math.pow(u, 1.9)) + 0.12 * Math.pow(Math.abs(Math.sin(7 * Math.PI * t)), 0.7)) / 1.12;
+};
 export const RIGHT_ANGLE = Math.PI / 2;
 
 export const smooth = (x: number) => {

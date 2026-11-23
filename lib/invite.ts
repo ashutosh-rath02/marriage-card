@@ -7,7 +7,7 @@ import { look, tint } from "./style";
 import type { Room } from "./rooms";
 import { F, almondLeaf, fairyLights, flower, soft, sparkle, tapedPhoto, tiles } from "./rooms";
 import { WEDDING, fmtDay, fmtTime, getGuest, type WeddingEvent } from "./wedding";
-import { RAJ, bandhani, camel, chhatri, cuspArch, elephant, jharokha, kandil, kangura, lotus, mandala, paisley, peacock, scatter, surya, teeth } from "./rajasthan";
+import { RAJ, bandhani, crown, camel, chhatri, cuspArch, elephant, jharokha, kandil, kangura, lotus, mandala, paisley, peacock, scatter, surya, teeth } from "./rajasthan";
 
 const MARIGOLD = ["#f4a43b", "#f7c948", "#f08a3c"];
 const LEAF = "#a9d98f";
@@ -194,6 +194,7 @@ const haldi: Room = {
   mood: ev("haldi").tagline,
   left(s) {
     wash(s, HALDI.wall);
+    crown(s, "sun", RAJ.saffron);
     // a fringe of marigold strands over a mango-leaf toran, under a darwaza border
     teeth(s, 0, 1, 0.03, 14, 0.035, RAJ.maroon);
     laris(s, Array.from({ length: 19 }, (_, i) => 0.04 + i * 0.05), 0.1, 0.17, 0.012);
@@ -218,6 +219,7 @@ const haldi: Room = {
   },
   right(s) {
     wash(s, HALDI.wall);
+    crown(s, "lotus", RAJ.saffron);
     teeth(s, 0, 1, 0.03, 14, 0.035, RAJ.maroon);
     toran(s, 0.0, 1.0, 0.09);
     laris(s, [0.05, 0.1, 0.15, 0.85, 0.9, 0.95], 0.1, 0.5);
@@ -364,6 +366,7 @@ const wedding: Room = {
   mood: ev("wedding").tagline,
   left(s) {
     wash(s, WED.wall);
+    crown(s, "lotus", RAJ.rani);
     swags(s, 0.0, 1.0, 0.05, 5, WED.drape);
     drapePanel(s, 0.06, 0.06, 0.1, WED.drape2);
     drapePanel(s, 0.84, 0.06, 0.1, WED.drape2);
@@ -379,6 +382,7 @@ const wedding: Room = {
   },
   right(s) {
     wash(s, WED.wall);
+    crown(s, "lotus", RAJ.rani);
     swags(s, 0.0, 1.0, 0.05, 5, WED.drape);
     archFrame(s, 0.28, 0.2, 0.44, 0.46, RAJ.maroon);
     inviteCard(s, ev("wedding"), 0.28, 0.2, 0.44, 0.46, WED.accent);
@@ -540,6 +544,7 @@ const reception: Room = {
   mood: ev("reception").tagline,
   left(s) {
     wash(s, REC.wall);
+    crown(s, "sun", RAJ.indigo);
     kangura(s, 0.03, 10, 0.05, RAJ.sand);
     for (const x of [0.04, 0.76]) jharokha(s, x, 0.26, 0.2, 0.5, { inner: RAJ.night, dome: false });
     floralArch(s, 0.33, 0.67, 0.34);
@@ -550,6 +555,7 @@ const reception: Room = {
   },
   right(s) {
     wash(s, REC.wall);
+    crown(s, "lotus", RAJ.indigo);
     kangura(s, 0.03, 10, 0.05, RAJ.sand);
     fairyLights(s, 0.02, 0.98, 0.1, 0.05);
     archFrame(s, 0.28, 0.2, 0.44, 0.42, RAJ.indigo);
@@ -592,7 +598,7 @@ const reception: Room = {
       iso.p([0.12, 0.24, 0.62]);
       iso.at([0.125, 0.24, 0.3], (s, [x, y], u) => {
         const arch = cuspArch(x - 0.12 * u, x + 0.12 * u, y + 0.1 * u, y - 0.04 * u, y - 0.2 * u, 3, 30);
-        s.shape(arch, tint(RAJ.maroon), { w: 1.6, mask: true });
+        s.shape(arch, tint(RAJ.rani), { w: 1.6, mask: true });
         s.circle(x, y - 0.03 * u, 0.03 * u, { w: 1.3, mask: true });
       });
       // two tall brass lamp stands either side
@@ -631,6 +637,7 @@ const sangeet: Room = {
   mood: ev("sangeet").tagline,
   left(s) {
     wash(s, SG.wall);
+    crown(s, "lotus", RAJ.turmeric);
     teeth(s, 0, 1, 0.03, 14, 0.035, RAJ.rani);
     for (const [x, y, z] of [
       [0.14, 0.09, 0.04],
@@ -646,6 +653,7 @@ const sangeet: Room = {
   },
   right(s) {
     wash(s, SG.wall);
+    crown(s, "sun", RAJ.rani);
     teeth(s, 0, 1, 0.03, 14, 0.035, RAJ.rani);
     for (const [x, y, z] of [
       [0.12, 0.09, 0.04],
@@ -716,6 +724,7 @@ export const ROOMS: Room[] = [haldi, sangeet, wedding, reception];
 
 export function drawFrontCover(s: Sketch) {
   if (look.color) s.washAll(tint("#fbc24a"), 1);
+  crown(s, "lotus", RAJ.rani);
   // a rani-pink bandhani band, then the blessing
   bandhani(s, 0.06, 0.07, 0.88, 0.055, RAJ.rani);
   s.text(WEDDING.blessing, 0.5, 0.165, 0.036, { weight: 500 });
@@ -747,6 +756,7 @@ export function drawFrontCover(s: Sketch) {
 
 export function drawBackCover(s: Sketch) {
   if (look.color) s.washAll(tint("#f07aa5"), 1);
+  crown(s, "lotus", RAJ.saffron);
   bandhani(s, 0.06, 0.07, 0.88, 0.055, RAJ.saffron);
   bandhani(s, 0.06, 0.875, 0.88, 0.055, RAJ.saffron);
   surya(s, 0.5, 0.36, 0.14);

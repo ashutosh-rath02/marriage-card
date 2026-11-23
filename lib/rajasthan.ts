@@ -4,6 +4,7 @@
 
 import type { Pt, Sketch } from "./sketch";
 import { tint } from "./style";
+import { G, roofLift } from "./fold";
 
 export const RAJ = {
   rani: "#e8447f", // rani pink
@@ -468,4 +469,34 @@ export function mandala(s: Sketch, cx: number, cy: number, r: number, cols: stri
   s.stroke(s.ellipsePts(cx, cy, r * 1.18, r * 1.18), { closed: true, w: 1.4 });
   s.blob(cx, cy, r * 0.18, r * 0.18, tint(RAJ.gold), { w: 1.4 });
   s.star(cx, cy, r * 0.13, { w: 1.2 });
+}
+
+/**
+ * The painted crown of a wall: the arch above the wall gets a trim of gold dots that follows the
+ * scallops, a medallion (sun face or lotus) and a pair of paisleys. Art y runs negative here.
+ */
+export function crown(s: Sketch, kind: "sun" | "lotus" = "sun", accent = RAJ.rani) {
+  const edge = (t: number, k = 0.86) => -G * roofLift(t) * k;
+  // an inner line following the arch, like a painted frame
+  const line: Pt[] = [[0.07, 0.02]];
+  for (let i = 0; i <= 48; i++) {
+    const t = 0.07 + (0.86 * i) / 48;
+    line.push([t, edge(t, 0.8) + 0.02 * (1 - roofLift(t))]);
+  }
+  line.push([0.93, 0.02]);
+  s.stroke(line, { w: 1.6, alpha: 0.8 });
+  // gold dots on a second line just inside it
+  for (let i = 0; i <= 22; i++) {
+    const t = 0.1 + (0.8 * i) / 22;
+    const [x, y] = [t, edge(t, 0.7) + 0.02];
+    s.blob(x, y, 0.007, 0.007, tint(i % 2 ? RAJ.gold : accent), { w: 1 });
+  }
+  if (kind === "sun") surya(s, 0.5, -0.17, 0.085);
+  else {
+    lotus(s, 0.5, -0.045, 0.16, accent);
+    s.blob(0.5, -0.255, 0.012, 0.012, tint(RAJ.gold), { w: 1.2 });
+  }
+  paisley(s, 0.25, -0.09, 0.045, 0.9, accent);
+  paisley(s, 0.75, -0.09, 0.045, -0.9, accent);
+  for (const [x, y] of [[0.34, -0.2], [0.66, -0.2], [0.17, -0.03], [0.83, -0.03]] as Pt[]) s.star(x, y, 0.016, { w: 1.2 });
 }

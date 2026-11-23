@@ -6,7 +6,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import type { Line2 } from "three-stdlib";
-import { G, H, L, N, dirOf, floorApex, focusAngle, focusOf, logicalOf, normalOf, pageAngles, roomOpenness, smooth } from "@/lib/fold";
+import { G, H, L, N, dirOf, roofLift, floorApex, focusAngle, focusOf, logicalOf, normalOf, pageAngles, roomOpenness, smooth } from "@/lib/fold";
 import { makePaperMaterial, INK } from "@/lib/paperMaterial";
 import { ROOMS } from "@/lib/invite";
 import { book } from "@/lib/store";
@@ -16,11 +16,6 @@ const PAGE_GAP = 0.014; // thickness between pages when the book is shut
 const INK_HEX = `#${INK.getHexString()}`;
 
 const ROOF_N = 44;
-/** The roof's lift at t (0..1 across the page), 0..1 of its height: an ogee arch with 7 scalloped lobes. */
-const roofLift = (t: number) => {
-  const u = Math.abs(2 * t - 1);
-  return ((1 - Math.pow(u, 1.9)) + 0.12 * Math.pow(Math.abs(Math.sin(7 * Math.PI * t)), 0.7)) / 1.12;
-};
 
 /** The page's shape: walls of height H under a scalloped (cusped) Rajasthani arch of height G. */
 const housePts = (inset = 0, g = G): [number, number][] => {
@@ -44,7 +39,7 @@ function houseGeometry(back: boolean) {
   const geo = new THREE.ShapeGeometry(shape);
   const pos = geo.attributes.position;
   const uv = geo.attributes.uv;
-  for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / L, pos.getY(i) / H);
+  for (let i = 0; i < pos.count; i++) uv.setXY(i, pos.getX(i) / L, pos.getY(i) / (H + G)); // the wall textures cover the walls and the arch
   if (back) geo.translate(-L / 2, 0, 0).rotateY(Math.PI).translate(L / 2, 0, 0);
   return geo;
 }
@@ -56,8 +51,7 @@ function setPeak(geo: THREE.BufferGeometry, g: number, prev: number) {
   for (let i = 0; i < pos.count; i++)
     if (pos.getY(i) > H + 1e-3) {
       const y = H + ((pos.getY(i) - H) * g) / prev;
-      pos.setY(i, y);
-      uv.setY(i, y / H);
+      pos.setY(i, y); // (uv stays put, so the painted arch shrinks with the roof)
     }
   pos.needsUpdate = true;
   uv.needsUpdate = true;
