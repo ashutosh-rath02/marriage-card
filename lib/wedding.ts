@@ -12,12 +12,12 @@ export type WeddingEvent = {
 };
 
 export const WEDDING = {
-  couple: ["mr x", ""] as [string, string], // the bride's name is left out for now: add it in the edit panel
-  initials: "x",
+  couple: ["y", "mr x"] as [string, string], // bride first: this card is from the bride's side
+  initials: "y & x",
   city: "jaipur",
   greeting: "padharo mhare desh",
   blessing: "shree ganeshaya namah",
-  hosts: "with the blessings of their families",
+  hosts: "with the blessings of the bride's family",
   rsvpBy: "15 jan 2027",
   events: [
     {
@@ -86,8 +86,8 @@ const clean = (s: string | undefined, max = 80) => (s ?? "").replace(/[\u0000-\u
 /** The card's current wording, as an editable object. */
 export function currentEdits(): Edits {
   return {
-    groom: WEDDING.couple[0],
-    bride: WEDDING.couple[1],
+    bride: WEDDING.couple[0],
+    groom: WEDDING.couple[1],
     city: WEDDING.city,
     hosts: WEDDING.hosts,
     greeting: WEDDING.greeting,
@@ -99,8 +99,8 @@ export function currentEdits(): Edits {
 
 /** Change the card's wording (anything missing keeps its current value). */
 export function applyEdits(e: Edits) {
-  if (clean(e.groom, 24)) WEDDING.couple[0] = clean(e.groom, 24).toLowerCase();
-  if (e.bride !== undefined) WEDDING.couple[1] = clean(e.bride, 24).toLowerCase();
+  if (clean(e.bride, 24)) WEDDING.couple[0] = clean(e.bride, 24).toLowerCase();
+  if (e.groom !== undefined) WEDDING.couple[1] = clean(e.groom, 24).toLowerCase();
   const ini = (n: string) => (n.trim().split(/\s+/).pop() ?? "")[0] ?? "";
   WEDDING.initials = WEDDING.couple.map(ini).filter(Boolean).join(" & ");
   if (clean(e.city, 30)) WEDDING.city = clean(e.city, 30).toLowerCase();
@@ -126,7 +126,7 @@ export function applyEdits(e: Edits) {
 
 /** Back to the wording the card shipped with. */
 export function resetEdits() {
-  applyEdits({ groom: ORIGINAL.couple[0], bride: ORIGINAL.couple[1], city: ORIGINAL.city, hosts: ORIGINAL.hosts, greeting: ORIGINAL.greeting, rsvpBy: ORIGINAL.rsvpBy, guest: "" });
+  applyEdits({ bride: ORIGINAL.couple[0], groom: ORIGINAL.couple[1], city: ORIGINAL.city, hosts: ORIGINAL.hosts, greeting: ORIGINAL.greeting, rsvpBy: ORIGINAL.rsvpBy, guest: "" });
   for (const ev of WEDDING.events) {
     const o = ORIGINAL.events.find((x) => x.key === ev.key);
     if (o) Object.assign(ev, o);

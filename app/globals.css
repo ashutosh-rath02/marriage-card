@@ -1385,3 +1385,131 @@ body::after {
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== motion ===== */
+.fx {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.petal {
+  position: absolute;
+  top: -5vh;
+  border-radius: 100% 0 100% 0;
+  opacity: 0.85;
+  animation: petal-fall linear infinite;
+  will-change: transform;
+}
+.petal-0 { background: linear-gradient(135deg, #ffb347, #f08a3c); }
+.petal-1 { background: linear-gradient(135deg, #ff8fb3, #e8447f); }
+.petal-2 { background: linear-gradient(135deg, #ffe08a, #f6b21a); }
+@keyframes petal-fall {
+  0% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0; }
+  8% { opacity: 0.85; }
+  50% { transform: translate3d(var(--sway), 55vh, 0) rotate(200deg); }
+  100% { transform: translate3d(calc(var(--sway) * -0.6), 112vh, 0) rotate(420deg); opacity: 0.7; }
+}
+
+.lantern {
+  position: absolute;
+  top: 24px;
+  transform-origin: 50% 0;
+  animation: swing 4.6s ease-in-out infinite alternate;
+  filter: drop-shadow(0 0 14px rgba(255, 190, 80, 0.75));
+}
+.lantern-cord {
+  display: block;
+  width: 1.5px;
+  margin: 0 auto;
+  background: var(--gold);
+  opacity: 0.8;
+}
+.lantern svg {
+  display: block;
+  margin: 0 auto;
+}
+.lantern svg path {
+  fill: #f3c968;
+  stroke: #7b0f33;
+  stroke-width: 1.6;
+  stroke-linejoin: round;
+}
+.lantern svg .glass {
+  fill: #ffe9a8;
+  animation: glow 2.4s ease-in-out infinite alternate;
+}
+.lantern svg path:nth-child(3) { fill: none; stroke-width: 1.1; }
+@keyframes swing {
+  from { transform: rotate(-7deg); }
+  to { transform: rotate(7deg); }
+}
+@keyframes glow {
+  from { fill: #ffd98a; }
+  to { fill: #fff3c8; }
+}
+
+/* things arrive rather than appear */
+.canvas-wrap {
+  animation: rise 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(26px) scale(0.94); }
+}
+.topbar {
+  animation: drop-in 0.8s 0.2s ease both;
+}
+@keyframes drop-in {
+  from { opacity: 0; transform: translateY(-14px); }
+}
+.room-name,
+.room-mood {
+  animation: caption-in 0.5s ease both;
+}
+.room-mood { animation-delay: 0.08s; }
+@keyframes caption-in {
+  from { opacity: 0; transform: translateY(10px); letter-spacing: 0.12em; }
+}
+
+/* the arch border drifts slowly sideways, the mandala breathes */
+body::before,
+body::after {
+  animation: slide 90s linear infinite;
+}
+@keyframes slide {
+  to { background-position-x: 480px; }
+}
+.stage::before {
+  animation: turn 240s linear infinite, breathe 7s ease-in-out infinite alternate;
+}
+@keyframes breathe {
+  from { opacity: 0.8; }
+  to { opacity: 1; }
+}
+.arrow-right:not(.is-hidden) svg {
+  animation: nudge 1.8s ease-in-out infinite;
+}
+@keyframes nudge {
+  50% { transform: translateX(7px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .petal,
+  .lantern,
+  .lantern svg .glass,
+  .canvas-wrap,
+  .topbar,
+  .room-name,
+  .room-mood,
+  body::before,
+  body::after,
+  .arrow-right svg,
+  .stage::before {
+    animation: none !important;
+  }
+  .fx {
+    display: none;
+  }
+}

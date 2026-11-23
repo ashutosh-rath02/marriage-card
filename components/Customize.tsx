@@ -59,8 +59,8 @@ export default function Customize({ onApply, onReset, onClose }: { onApply: (e: 
           <div className="ev-tagline">change the words, then apply. copy the link to share your version.</div>
           <div className="ev-rule" aria-hidden="true" />
           <div className="edit-grid">
+            {field("bride (named first)", e.bride, set("bride"))}
             {field("groom", e.groom, set("groom"))}
-            {field("bride", e.bride, set("bride"))}
             {field("city", e.city, set("city"))}
             {field("reply by", e.rsvpBy, set("rsvpBy"))}
           </div>

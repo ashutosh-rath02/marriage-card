@@ -16,6 +16,23 @@ import { buildTextures, type BookTextures } from "@/lib/textures";
 import { look } from "@/lib/style";
 
 const FONT = "Caveat";
+
+/** Falling petals: a fixed set, spread by simple arithmetic so server and browser agree. */
+const PETALS = Array.from({ length: 24 }, (_, i) => ({
+  left: (i * 37 + 11) % 100,
+  size: 9 + ((i * 7) % 9),
+  dur: 11 + ((i * 5) % 9),
+  delay: -((i * 3.7) % 20),
+  sway: 30 + ((i * 13) % 50),
+  hue: i % 3,
+}));
+/** Hanging brass lanterns that swing slowly from the top edge. */
+const LANTERNS = [
+  { left: 27, len: 52, delay: 0 },
+  { left: 35, len: 96, delay: -1.2 },
+  { left: 65, len: 96, delay: -2.1 },
+  { left: 73, len: 52, delay: -0.6 },
+];
 const EDITS_KEY = "marriage.edits.v1";
 
 export default function Experience() {
@@ -141,6 +158,22 @@ export default function Experience() {
 
   return (
     <main className="stage">
+      <div className="fx" aria-hidden="true">
+        {PETALS.map((p, i) => (
+          <span key={i} className={`petal petal-${p.hue}`} style={{ left: `${p.left}%`, width: p.size, height: p.size * 1.3, animationDuration: `${p.dur}s`, animationDelay: `${p.delay}s`, ["--sway" as string]: `${p.sway}px` }} />
+        ))}
+        {LANTERNS.map((l, i) => (
+          <div key={i} className="lantern" style={{ left: `${l.left}%`, animationDelay: `${l.delay}s` }}>
+            <span className="lantern-cord" style={{ height: l.len }} />
+            <svg viewBox="0 0 40 64" width="30" height="48">
+              <path d="M20 2 L33 16 H7 Z" />
+              <path d="M7 16 H33 L29 52 H11 Z" className="glass" />
+              <path d="M15 16 L14 52 M20 16 V52 M25 16 L26 52 M9 32 H31" />
+              <path d="M11 52 H29 L20 62 Z" />
+            </svg>
+          </div>
+        ))}
+      </div>
       <header className="topbar">
         <div className="wordmark">
           {WEDDING.initials}
@@ -192,7 +225,7 @@ export default function Experience() {
       <footer className="caption">
         {open ? (
           <>
-            <div className="room-name">{eventByKey(current.name)?.name ?? current.name}</div>
+            <div className="room-name" key={current.name}>{eventByKey(current.name)?.name ?? current.name}</div>
             <div className="room-mood">{eventByKey(current.name) ? `${fmtDay(eventByKey(current.name)!.start)} · tap the card` : ""}</div>
           </>
         ) : (

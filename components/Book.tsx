@@ -243,9 +243,12 @@ export default function Book({ tex, onSpot }: { tex: BookTextures; onSpot: (room
   const coverRefs = useRef<{ front: THREE.Mesh | null; back: THREE.Mesh | null }>({ front: null, back: null });
   const popRefs = useRef<{ outer: THREE.Group | null; hinge: THREE.Group | null }[][]>(Array.from({ length: N }, () => []));
   const target = useMemo(() => new THREE.Vector3(), []);
+  const rootRef = useRef<THREE.Group>(null);
 
   useFrame(({ clock }, dtRaw) => {
     shimmer.value = clock.elapsedTime;
+    // the closed card floats gently; once open it settles
+    if (rootRef.current) rootRef.current.position.y = Math.sin(clock.elapsedTime * 1.3) * 0.028 * (1 - smooth(book.open));
     const dt = Math.min(dtRaw, 1 / 20);
     if (!book.dragging) book.f += (book.target - book.f) * (1 - Math.exp(-dt * 7));
     book.open += (book.openTarget - book.open) * (1 - Math.exp(-dt * 7));
@@ -373,7 +376,7 @@ export default function Book({ tex, onSpot }: { tex: BookTextures; onSpot: (room
   });
 
   return (
-    <group>
+    <group ref={rootRef}>
       {pageMats.map((m, k) => (
         <group key={k} ref={(el) => void (pageRefs.current[k] = el)}>
           <mesh geometry={pageGeo[k].front} material={m.front} ref={k === N ? (el) => void (coverRefs.current.front = el) : undefined} />
