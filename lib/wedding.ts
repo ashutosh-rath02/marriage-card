@@ -17,7 +17,7 @@ export const WEDDING = {
   city: "jaipur",
   greeting: "padharo mhare desh",
   blessing: "shree ganeshaya namah",
-  hosts: "with the blessings of the bride's family",
+  hosts: "her family joyfully invites you",
   rsvpBy: "15 jan 2027",
   events: [
     {
