@@ -728,9 +728,9 @@ export function drawFrontCover(s: Sketch) {
   s.fill(inner, tint(RAJ.gold), { alpha: 0.28, jitter: 0 });
   chhatri(s, 0.5, 0.265, 0.12);
   surya(s, 0.5, 0.385, 0.04);
-  s.text(WEDDING.couple[0], 0.5, 0.49, 0.1, { family: "Yatra One" });
+  s.text(WEDDING.couple[0], 0.5, 0.49, 0.1 * Math.min(1, 9 / WEDDING.couple[0].length), { family: "Yatra One" });
   s.text("weds", 0.5, 0.565, 0.036, { weight: 500 });
-  s.text(WEDDING.couple[1], 0.5, 0.64, 0.1, { family: "Yatra One" });
+  s.text(WEDDING.couple[1], 0.5, 0.64, 0.1 * Math.min(1, 9 / WEDDING.couple[1].length), { family: "Yatra One" });
   // peacocks and lotuses flank the arch
   peacock(s, 0.16, 0.78, 0.2, 1);
   peacock(s, 0.84, 0.78, 0.2, -1);

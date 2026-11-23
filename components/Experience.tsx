@@ -6,7 +6,8 @@ import { ContactShadows } from "@react-three/drei";
 import Book from "./Book";
 import EventCard from "./EventCard";
 import Rsvp from "./Rsvp";
-import { WEDDING, eventByKey, fmtDay, setGuest } from "@/lib/wedding";
+import Customize from "./Customize";
+import { WEDDING, applyEdits, decodeEdits, eventByKey, fmtDay, resetEdits, setGuest, type Edits } from "@/lib/wedding";
 import { HandArrow, HandUnderline } from "./Hand";
 import { logicalOf } from "@/lib/fold";
 import { ROOMS } from "@/lib/invite";
@@ -15,6 +16,7 @@ import { buildTextures, type BookTextures } from "@/lib/textures";
 import { look } from "@/lib/style";
 
 const FONT = "Caveat";
+const EDITS_KEY = "marriage.edits.v1";
 
 export default function Experience() {
   const [tex, setTex] = useState<BookTextures | null>(null);
@@ -22,7 +24,9 @@ export default function Experience() {
   const [open, setOpen] = useState(false);
   const [card, setCard] = useState<string | null>(null); // event key whose invite card is open
   const [rsvp, setRsvp] = useState<string | null>(null); // "" = open, or an event key to pre-tick
-  const writing = card !== null || rsvp !== null;
+  const [editing, setEditing] = useState(false);
+  const [, bump] = useState(0); // re-render captions after the wording changes
+  const writing = card !== null || rsvp !== null || editing;
   const drag = useRef({ x: 0, startX: 0, active: false });
 
   // Draw every surface once the handwriting font is ready (loose pen, a little colour).
@@ -37,7 +41,16 @@ export default function Experience() {
       look.pen = "sketchy";
       look.color = true;
       // a personal link: ?to=the%20sharma%20family puts their name on the cover
-      setGuest(new URLSearchParams(window.location.search).get("to") ?? "");
+      // an edited card: from a shared link (#c=...) or from this browser's saved edits
+      try {
+        const hash = new URLSearchParams(window.location.hash.slice(1)).get("c");
+        const saved = hash ? decodeEdits(hash) : (JSON.parse(localStorage.getItem(EDITS_KEY) || "null") as Edits | null);
+        if (saved) applyEdits(saved);
+      } catch {
+        /* ignore a broken link */
+      }
+      const to = new URLSearchParams(window.location.search).get("to");
+      if (to) setGuest(to);
       if (alive) setTex(buildTextures(`${FONT}, cursive`));
     })();
     return () => {
@@ -98,6 +111,32 @@ export default function Experience() {
     setRoom(logicalOf(book.target));
   };
 
+  // redraw every surface with the new wording
+  const rebuild = () => {
+    setTex(buildTextures(`${FONT}, cursive`));
+    bump((n) => n + 1);
+  };
+  const applyAndSave = (e: Edits) => {
+    applyEdits(e);
+    try {
+      localStorage.setItem(EDITS_KEY, JSON.stringify(e));
+    } catch {
+      /* private mode: the edit just won't be remembered */
+    }
+    rebuild();
+    setEditing(false);
+  };
+  const reset = () => {
+    resetEdits();
+    try {
+      localStorage.removeItem(EDITS_KEY);
+    } catch {
+      /* nothing to forget */
+    }
+    rebuild();
+    setEditing(false);
+  };
+
   const current = ROOMS[room];
 
   return (
@@ -107,9 +146,14 @@ export default function Experience() {
           {WEDDING.initials}
           <HandUnderline />
         </div>
-        <button className={`hand-btn rsvp-btn ${writing ? "is-hidden" : ""}`} onClick={() => setRsvp("")}>
-          rsvp
-        </button>
+        <div className="topright">
+          <button className={`hand-btn ${writing ? "is-hidden" : ""}`} onClick={() => setEditing(true)}>
+            edit
+          </button>
+          <button className={`hand-btn rsvp-btn ${writing ? "is-hidden" : ""}`} onClick={() => setRsvp("")}>
+            rsvp
+          </button>
+        </div>
       </header>
 
       <div className="canvas-wrap" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} onDoubleClick={() => setBookOpen(!open)}>
@@ -169,6 +213,7 @@ export default function Experience() {
           }}
         />
       )}
+      {editing && <Customize onApply={applyAndSave} onReset={reset} onClose={() => setEditing(false)} />}
       {rsvp !== null && <Rsvp preselect={rsvp || undefined} onClose={() => setRsvp(null)} />}
     </main>
   );

@@ -12,7 +12,7 @@ export type WeddingEvent = {
 };
 
 export const WEDDING = {
-  couple: ["mr x", "vishika"] as const,
+  couple: ["mr x", "vishika"] as [string, string],
   initials: "x & v",
   city: "jaipur",
   greeting: "padharo mhare desh",
@@ -62,6 +62,86 @@ export const WEDDING = {
     },
   ] satisfies WeddingEvent[],
 };
+
+// ---------------------------------------------------------------------------
+// Editing: the in-app "edit card" panel and shareable links both go through these.
+
+export type EventEdit = Partial<Pick<WeddingEvent, "name" | "tagline" | "start" | "venue" | "address" | "dress">>;
+export type Edits = {
+  groom?: string;
+  bride?: string;
+  city?: string;
+  hosts?: string;
+  greeting?: string;
+  rsvpBy?: string;
+  guest?: string;
+  events?: Record<string, EventEdit>;
+};
+
+const ORIGINAL = JSON.parse(JSON.stringify(WEDDING)) as typeof WEDDING;
+const pad = (n: number) => String(n).padStart(2, "0");
+const localIso = (dt: Date) => `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+const clean = (s: string | undefined, max = 80) => (s ?? "").replace(/[\u0000-\u001f]/g, " ").trim().slice(0, max);
+
+/** The card's current wording, as an editable object. */
+export function currentEdits(): Edits {
+  return {
+    groom: WEDDING.couple[0],
+    bride: WEDDING.couple[1],
+    city: WEDDING.city,
+    hosts: WEDDING.hosts,
+    greeting: WEDDING.greeting,
+    rsvpBy: WEDDING.rsvpBy,
+    guest: getGuest(),
+    events: Object.fromEntries(WEDDING.events.map((e) => [e.key, { name: e.name, tagline: e.tagline, start: e.start, venue: e.venue, address: e.address, dress: e.dress }])),
+  };
+}
+
+/** Change the card's wording (anything missing keeps its current value). */
+export function applyEdits(e: Edits) {
+  if (clean(e.groom, 24)) WEDDING.couple[0] = clean(e.groom, 24).toLowerCase();
+  if (clean(e.bride, 24)) WEDDING.couple[1] = clean(e.bride, 24).toLowerCase();
+  const ini = (n: string) => (n.trim().split(/\s+/).pop() ?? "")[0] ?? "";
+  WEDDING.initials = `${ini(WEDDING.couple[0])} & ${ini(WEDDING.couple[1])}`;
+  if (clean(e.city, 30)) WEDDING.city = clean(e.city, 30).toLowerCase();
+  if (clean(e.hosts, 60)) WEDDING.hosts = clean(e.hosts, 60).toLowerCase();
+  if (clean(e.greeting, 40)) WEDDING.greeting = clean(e.greeting, 40).toLowerCase();
+  if (clean(e.rsvpBy, 24)) WEDDING.rsvpBy = clean(e.rsvpBy, 24).toLowerCase();
+  if (e.guest !== undefined) setGuest(e.guest);
+  for (const ev of WEDDING.events) {
+    const o = e.events?.[ev.key];
+    if (!o) continue;
+    if (clean(o.name, 28)) ev.name = clean(o.name, 28).toLowerCase();
+    if (clean(o.tagline, 60)) ev.tagline = clean(o.tagline, 60).toLowerCase();
+    if (clean(o.venue, 50)) ev.venue = clean(o.venue, 50).toLowerCase();
+    if (clean(o.address, 80)) ev.address = clean(o.address, 80).toLowerCase();
+    if (clean(o.dress, 80)) ev.dress = clean(o.dress, 80).toLowerCase();
+    if (o.start && !Number.isNaN(new Date(o.start).getTime())) {
+      const dur = new Date(ev.end).getTime() - new Date(ev.start).getTime();
+      ev.start = o.start.slice(0, 16);
+      ev.end = localIso(new Date(new Date(ev.start).getTime() + (dur > 0 ? dur : 3 * 3600 * 1000)));
+    }
+  }
+}
+
+/** Back to the wording the card shipped with. */
+export function resetEdits() {
+  applyEdits({ groom: ORIGINAL.couple[0], bride: ORIGINAL.couple[1], city: ORIGINAL.city, hosts: ORIGINAL.hosts, greeting: ORIGINAL.greeting, rsvpBy: ORIGINAL.rsvpBy, guest: "" });
+  for (const ev of WEDDING.events) {
+    const o = ORIGINAL.events.find((x) => x.key === ev.key);
+    if (o) Object.assign(ev, o);
+  }
+}
+
+/** Edits <-> a short link fragment, so an edited card can be shared as a plain URL. */
+export const encodeEdits = (e: Edits) => btoa(unescape(encodeURIComponent(JSON.stringify(e)))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+export function decodeEdits(s: string): Edits | null {
+  try {
+    return JSON.parse(decodeURIComponent(escape(atob(s.replace(/-/g, "+").replace(/_/g, "/"))))) as Edits;
+  } catch {
+    return null;
+  }
+}
 
 export const eventByKey = (key: string) => WEDDING.events.find((e) => e.key === key);
 

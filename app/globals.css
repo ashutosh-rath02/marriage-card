@@ -1349,3 +1349,39 @@ body::after {
   border: 2px solid var(--ink);
   box-shadow: 0 0 0 6px #f3c968, 0 0 0 8px var(--ink), 0 18px 40px rgba(0, 0, 0, 0.35);
 }
+
+/* the edit-card panel */
+.edit-card {
+  width: min(640px, 100%);
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.edit-inner {
+  text-align: left;
+}
+.edit-inner .ev-name,
+.edit-inner .ev-tagline {
+  text-align: center;
+}
+.edit-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+.edit-event {
+  margin: 14px 0 0;
+  padding: 6px 14px 4px;
+  border: 1.4px dashed var(--ink-soft);
+  border-radius: 6px;
+}
+.edit-event legend {
+  font-family: var(--display);
+  padding: 0 8px;
+  font-size: 22px;
+  color: var(--ink);
+}
+@media (max-width: 560px) {
+  .edit-grid {
+    grid-template-columns: 1fr;
+  }
+}

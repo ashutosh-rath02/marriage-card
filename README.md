@@ -59,3 +59,22 @@ Stack: Next.js (App Router), React Three Fiber, drei, three.js. Handwriting is C
 Each floor is a square creased on its diagonal. With walls at angle θ apart, the crease apex sits at
 distance `L / cos(θ/2)` along the bisector and height `sqrt(2L² − (L / cos(θ/2))²)`: flat at 90°,
 standing straight up when the book is shut.
+
+
+## This branch: a Rajasthani wedding card
+
+A pop-up wedding card in a Rajasthani style: scalloped-arch pages, a royal maroon and gold
+backdrop, and four rooms (haldi, sangeet, the phere, reception). The Rajasthani drawing kit
+(arches, jharokha windows, peacock, elephant, camel, bandhani, paisley) is in `lib/rajasthan.ts`;
+the rooms are in `lib/invite.ts`.
+
+### Editing the card
+
+1. **In the page:** press **edit** (top right). Change the names, city, greeting, dates, venues
+   and dress codes, then **apply**. Edits are saved in your browser. **copy share link** gives a URL
+   that carries your edits (`#c=...`) so anyone who opens it sees your version. **reset** restores the
+   original wording.
+2. **Per guest:** add `?to=the%20sharma%20family` to the link to put a guest's name on the cover.
+3. **In code:** the defaults live in `lib/wedding.ts` (names, dates, venues, taglines, RSVP date).
+4. **Look:** colours are in `RAJ` (`lib/rajasthan.ts`) and the page theme is at the end of
+   `app/globals.css`. Room walls and pop-ups are in `lib/invite.ts`.
