@@ -304,13 +304,13 @@ export class Sketch {
     c.restore();
   }
 
-  text(str: string, x: number, y: number, size: number, o: { align?: CanvasTextAlign; weight?: number; rotate?: number } = {}) {
+  text(str: string, x: number, y: number, size: number, o: { align?: CanvasTextAlign; weight?: number; rotate?: number; family?: string } = {}) {
     const c = this.ink;
     c.save();
     c.fillStyle = "#000";
     c.textAlign = o.align ?? "center";
     c.textBaseline = "middle";
-    c.font = `${o.weight ?? 700} ${size * this.S}px ${this.fontFamily}`;
+    c.font = `${o.family ? 400 : (o.weight ?? 700)} ${size * this.S}px ${o.family ? `"${o.family}", ` : ""}${this.fontFamily}`;
     const [px, py] = this.px([x, y]);
     c.translate(px, py);
     c.rotate(o.rotate ?? 0);

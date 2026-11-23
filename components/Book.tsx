@@ -15,22 +15,32 @@ import type { BookTextures } from "@/lib/textures";
 const PAGE_GAP = 0.014; // thickness between pages when the book is shut
 const INK_HEX = `#${INK.getHexString()}`;
 
-/** The page's house shape: walls of height H with a peak of height G above. */
+const ROOF_N = 44;
+/** The roof's lift at t (0..1 across the page), 0..1 of its height: an ogee arch with 7 scalloped lobes. */
+const roofLift = (t: number) => {
+  const u = Math.abs(2 * t - 1);
+  return ((1 - Math.pow(u, 1.9)) + 0.12 * Math.pow(Math.abs(Math.sin(7 * Math.PI * t)), 0.7)) / 1.12;
+};
+
+/** The page's shape: walls of height H under a scalloped (cusped) Rajasthani arch of height G. */
 const housePts = (inset = 0, g = G): [number, number][] => {
   const k = inset * 1.6;
-  return [
+  const y0 = H - inset * 0.3;
+  const pts: [number, number][] = [
     [inset, inset],
     [L - inset, inset],
-    [L - inset, H - inset * 0.3],
-    [L / 2, H + g - k],
-    [inset, H - inset * 0.3],
-    [inset, inset],
   ];
+  for (let i = 0; i <= ROOF_N; i++) {
+    const t = 1 - i / ROOF_N;
+    pts.push([inset + (L - 2 * inset) * t, y0 + (g - k) * roofLift(t)]);
+  }
+  pts.push([inset, inset]);
+  return pts;
 };
 
 /** House-shaped page geometry; uv.y runs 0..1 over the walls and past 1 in the peak. */
 function houseGeometry(back: boolean) {
-  const shape = new THREE.Shape(housePts().slice(0, 5).map(([x, y]) => new THREE.Vector2(x, y)));
+  const shape = new THREE.Shape(housePts().slice(0, -1).map(([x, y]) => new THREE.Vector2(x, y)));
   const geo = new THREE.ShapeGeometry(shape);
   const pos = geo.attributes.position;
   const uv = geo.attributes.uv;
@@ -39,14 +49,15 @@ function houseGeometry(back: boolean) {
   return geo;
 }
 
-/** Move the roof's apex to height H + g (pages beside the open room get a lower peak). */
-function setPeak(geo: THREE.BufferGeometry, g: number) {
+/** Rescale the roof to height g (pages beside the open room get a lower arch). */
+function setPeak(geo: THREE.BufferGeometry, g: number, prev: number) {
   const pos = geo.attributes.position;
   const uv = geo.attributes.uv;
   for (let i = 0; i < pos.count; i++)
     if (pos.getY(i) > H + 1e-3) {
-      pos.setY(i, H + g);
-      uv.setY(i, (H + g) / H);
+      const y = H + ((pos.getY(i) - H) * g) / prev;
+      pos.setY(i, y);
+      uv.setY(i, y / H);
     }
   pos.needsUpdate = true;
   uv.needsUpdate = true;
@@ -57,14 +68,18 @@ function setPeak(geo: THREE.BufferGeometry, g: number) {
 function wobbleRect(seed: number, inset = 0, z = 0, g = G): THREE.Vector3[] {
   const corners = housePts(inset, g);
   const out: THREE.Vector3[] = [];
+  let c = 0;
   for (let s = 0; s < corners.length - 1; s++) {
     const [x1, y1] = corners[s];
     const [x2, y2] = corners[s + 1];
-    const nx = -(y2 - y1);
-    const ny = x2 - x1;
-    for (let j = 0; j < 16; j++) {
-      const t = j / 16;
-      const o = 0.004 * (Math.sin(seed * 3.1 + (s * 16 + j) * 0.7) * 0.6 + Math.sin(seed * 1.7 + (s * 16 + j) * 1.9) * 0.4);
+    const len = Math.hypot(x2 - x1, y2 - y1);
+    const nx = -(y2 - y1) / (len || 1);
+    const ny = (x2 - x1) / (len || 1);
+    const steps = Math.max(1, Math.round(len * 40));
+    for (let j = 0; j < steps; j++) {
+      const t = j / steps;
+      const o = 0.004 * (Math.sin(seed * 3.1 + c * 0.35) * 0.6 + Math.sin(seed * 1.7 + c * 0.95) * 0.4);
+      c++;
       out.push(new THREE.Vector3(x1 + (x2 - x1) * t + nx * o, y1 + (y2 - y1) * t + ny * o, z));
     }
   }
@@ -266,9 +281,9 @@ export default function Book({ tex, onSpot }: { tex: BookTextures; onSpot: (room
       const peak = G * (1 + (0.25 + 0.75 * near - 1) * e);
       const pg = pageGeo[k];
       if (Math.abs(pg.g - peak) > 1e-3) {
+        setPeak(pg.front, peak, pg.g);
+        setPeak(pg.back, peak, pg.g);
         pg.g = peak;
-        setPeak(pg.front, peak);
-        setPeak(pg.back, peak);
         const line = outlineRefs.current[k];
         if (line) line.geometry.setPositions(wobbleRect(k + 1, 0, 0, peak).flatMap((v) => [v.x, v.y, v.z]));
       }
@@ -354,7 +369,7 @@ export default function Book({ tex, onSpot }: { tex: BookTextures; onSpot: (room
     camera.position.set(target.x + Math.cos(yaw) * Math.cos(pitch) * 10, target.y + Math.sin(pitch) * 10, target.z + Math.sin(yaw) * Math.cos(pitch) * 10);
     camera.lookAt(target);
     // tall enough for the folded page stacks, which rise well above the open room
-    const viewH = 1.95 + 1.05 * e;
+    const viewH = 1.7 + 1.3 * e;
     const narrow = size.width < 640;
     const viewW = (narrow ? 1.35 : 1.9) + (narrow ? 1.0 : 1.2) * e;
     const ortho = camera as THREE.OrthographicCamera;

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import "@fontsource/caveat/500.css";
 import "@fontsource/caveat/700.css";
+import "@fontsource/yatra-one/400.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#ecebe7",
+  themeColor: "#5b0f35",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

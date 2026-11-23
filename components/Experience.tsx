@@ -30,7 +30,7 @@ export default function Experience() {
     let alive = true;
     (async () => {
       try {
-        await Promise.all([document.fonts.load(`700 64px ${FONT}`), document.fonts.load(`500 64px ${FONT}`)]);
+        await Promise.all([document.fonts.load(`700 64px ${FONT}`), document.fonts.load(`500 64px ${FONT}`), document.fonts.load(`400 64px "Yatra One"`)]);
       } catch {
         /* fall back to whatever cursive font is around */
       }

@@ -1,6 +1,6 @@
 :root {
-  --ink: #c4161c;
-  --ink-soft: rgba(196, 22, 28, 0.55);
+  --ink: #7b0f33;
+  --ink-soft: rgba(123, 15, 51, 0.55);
   --paper: #ecebe7;
   --hand: "Caveat", cursive;
 }
@@ -113,7 +113,7 @@ body {
 }
 
 .hand-btn:hover {
-  background: rgba(196, 22, 28, 0.06);
+  background: rgba(123, 15, 51, 0.06);
   transform: rotate(-1.2deg);
 }
 
@@ -470,7 +470,7 @@ body {
   height: 22px;
   translate: -50% 0;
   background: rgba(255, 255, 255, 0.55);
-  border: 1.2px solid rgba(196, 22, 28, 0.45);
+  border: 1.2px solid rgba(123, 15, 51, 0.45);
 }
 
 .cu-magnet {
@@ -562,7 +562,7 @@ body {
   line-height: 32px;
   color: var(--ink);
   background: transparent;
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(196, 22, 28, 0.16) 31px, rgba(196, 22, 28, 0.16) 32px);
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(123, 15, 51, 0.16) 31px, rgba(123, 15, 51, 0.16) 32px);
   background-attachment: local;
   border: 0;
   outline: none;
@@ -572,7 +572,7 @@ body {
 
 .cu-big textarea::placeholder,
 .cu-right textarea::placeholder {
-  color: rgba(196, 22, 28, 0.38);
+  color: rgba(123, 15, 51, 0.38);
 }
 
 .cu-actions {
@@ -682,7 +682,7 @@ body {
   color: var(--ink);
   background: transparent;
   border: 0;
-  border-bottom: 1.2px dashed rgba(196, 22, 28, 0.25);
+  border-bottom: 1.2px dashed rgba(123, 15, 51, 0.25);
   cursor: pointer;
 }
 
@@ -813,7 +813,7 @@ body {
   line-height: 32px;
   color: var(--ink);
   background: transparent;
-  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(196, 22, 28, 0.18) 31px, rgba(196, 22, 28, 0.18) 32px);
+  background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 31px, rgba(123, 15, 51, 0.18) 31px, rgba(123, 15, 51, 0.18) 32px);
   background-attachment: local;
   border: 0;
   outline: none;
@@ -822,7 +822,7 @@ body {
 }
 
 .journal-paper textarea::placeholder {
-  color: rgba(196, 22, 28, 0.38);
+  color: rgba(123, 15, 51, 0.38);
 }
 
 .journal-actions {
@@ -1005,11 +1005,11 @@ body {
 }
 
 
-.ev-haldi .ev-inner { background-color: #fff6d6; }
+.ev-haldi .ev-inner { background-color: #fff0b8; }
 
-.ev-party .ev-inner { background-color: #eeeefb; }
-.ev-wedding .ev-inner { background-color: #fdeae6; }
-.ev-reception .ev-inner { background-color: #fbf6ec; }
+.ev-sangeet .ev-inner { background-color: #dcf3f0; }
+.ev-wedding .ev-inner { background-color: #fde3d0; }
+.ev-reception .ev-inner { background-color: #fbefd2; }
 
 .ev-hosts {
   font-size: 20px;
@@ -1083,7 +1083,7 @@ body {
 
 .ev-stamp:hover {
   transform: rotate(-2deg);
-  background: rgba(196, 22, 28, 0.06);
+  background: rgba(123, 15, 51, 0.06);
 }
 
 .ev-stamp.ev-rsvp {
@@ -1113,7 +1113,7 @@ body {
   color: var(--ink);
   background: transparent;
   border: 0;
-  border-bottom: 1.6px solid rgba(196, 22, 28, 0.4);
+  border-bottom: 1.6px solid rgba(123, 15, 51, 0.4);
   outline: none;
   padding: 2px 2px 4px;
   resize: none;
@@ -1121,7 +1121,7 @@ body {
 
 .rsvp-field input::placeholder,
 .rsvp-field textarea::placeholder {
-  color: rgba(196, 22, 28, 0.35);
+  color: rgba(123, 15, 51, 0.35);
 }
 
 .rsvp-events {
@@ -1230,4 +1230,122 @@ body {
 
 @keyframes seal {
   from { transform: scale(2.2); opacity: 0; }
+}
+
+/* ===== Rajasthani theme: royal maroon, gold, a slowly turning mandala ===== */
+:root {
+  --gold: #f3c968;
+  --cream: #ffefc9;
+  --display: "Yatra One", "Caveat", cursive;
+}
+
+html,
+body {
+  background-color: #35081f;
+  background-image: url("/jaali.svg"), radial-gradient(ellipse at 50% 46%, rgba(255, 176, 70, 0.34), rgba(255, 176, 70, 0) 46%),
+    radial-gradient(ellipse at 50% 50%, #96204f 0%, #61113a 52%, #2a041b 100%);
+  background-size: 64px 64px, 100% 100%, 100% 100%;
+}
+
+/* rows of cusped arches along the top and bottom edges */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 30px;
+  background: url("/arches.svg") 0 0 / 48px 30px repeat-x;
+  pointer-events: none;
+  z-index: 1;
+}
+body::before {
+  top: 0;
+  transform: scaleY(-1);
+}
+body::after {
+  bottom: 0;
+}
+
+.stage::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 47%;
+  width: min(135vh, 135vw);
+  height: min(135vh, 135vw);
+  background: url("/mandala.svg") center / contain no-repeat;
+  transform: translate(-50%, -50%);
+  animation: turn 240s linear infinite;
+  pointer-events: none;
+}
+@keyframes turn {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage::before {
+    animation: none;
+  }
+}
+
+.topbar {
+  padding-top: 34px;
+}
+.wordmark {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 34px;
+  color: var(--gold);
+  letter-spacing: 0.04em;
+}
+.topbar .underline path,
+.arrow path {
+  stroke: var(--gold);
+}
+.topbar .hand-btn {
+  color: var(--gold);
+  border-color: var(--gold);
+  background: rgba(255, 255, 255, 0.04);
+}
+.topbar .hand-btn:hover {
+  background: rgba(243, 201, 104, 0.16);
+}
+.room-name {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: 40px;
+  letter-spacing: 0.03em;
+  color: var(--cream);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45);
+}
+.room-mood {
+  color: var(--gold);
+  opacity: 1;
+}
+.caption {
+  padding-bottom: 46px;
+}
+.loading {
+  color: var(--gold);
+}
+@media (max-width: 640px) {
+  .arrow {
+    bottom: 52px;
+  }
+  .room-name {
+    font-size: 32px;
+  }
+}
+
+/* the event card held up close */
+.ev-name {
+  font-family: var(--display);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+}
+.ev-inner {
+  border: 2px solid var(--ink);
+  box-shadow: 0 0 0 6px #f3c968, 0 0 0 8px var(--ink), 0 18px 40px rgba(0, 0, 0, 0.35);
 }

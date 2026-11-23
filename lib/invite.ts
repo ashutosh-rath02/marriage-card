@@ -5,12 +5,13 @@ import type { Pt, Sketch } from "./sketch";
 import { isoLayers, WHITE, type Iso } from "./iso";
 import { look, tint } from "./style";
 import type { Room } from "./rooms";
-import { F, almondLeaf, cloud, fairyLights, flower, planks, scallopRug, soft, sparkle, tapedPhoto, tiles } from "./rooms";
+import { F, almondLeaf, fairyLights, flower, soft, sparkle, tapedPhoto, tiles } from "./rooms";
 import { WEDDING, fmtDay, fmtTime, getGuest, type WeddingEvent } from "./wedding";
+import { RAJ, bandhani, camel, chhatri, cuspArch, elephant, jharokha, kandil, kangura, lotus, mandala, paisley, peacock, scatter, surya, teeth } from "./rajasthan";
 
 const MARIGOLD = ["#f4a43b", "#f7c948", "#f08a3c"];
-const LEAF = "#bfe0b0";
-const GOLD = "#f0d48a";
+const LEAF = "#a9d98f";
+const GOLD = "#ecc15c";
 const CREAM = "#fffaf0";
 
 const ev = (key: string) => WEDDING.events.find((e) => e.key === key) as WeddingEvent;
@@ -77,6 +78,18 @@ function diya(s: Sketch, x: number, y: number, w = 0.05) {
   s.stroke(flame, { closed: true, w: 1.4 });
 }
 
+/** A cusped arch (mehrab) in gold and maroon behind a card, like a niche in a haveli wall. */
+function archFrame(s: Sketch, x: number, y: number, w: number, h: number, fillC = RAJ.maroon) {
+  const pad = 0.045;
+  const outer = cuspArch(x - pad, x + w + pad, y + h + pad, y + h * 0.3, y - pad * 2.6, 5);
+  s.sticker(outer, 4, 0.2, tint(fillC));
+  s.stroke(outer, { closed: true, w: 2.4 });
+  const inner = cuspArch(x - pad * 0.45, x + w + pad * 0.45, y + h + pad * 0.5, y + h * 0.3, y - pad * 1.3, 5);
+  s.stroke(inner, { closed: true, w: 1.4, alpha: 0.8 });
+  s.fill(inner, tint(RAJ.gold), { alpha: 0.55, jitter: 0 });
+  chhatri(s, x + w / 2, y - pad * 2.7, w * 0.2);
+}
+
 /** The invite card pinned on a wall; clicking it opens the details. */
 function inviteCard(s: Sketch, e: WeddingEvent, x: number, y: number, w: number, h: number, accent: string) {
   const card = s.rectPts(x, y, w, h);
@@ -93,7 +106,7 @@ function inviteCard(s: Sketch, e: WeddingEvent, x: number, y: number, w: number,
   ])
     flower(s, cx, cy, 0.01, accent);
   const cx = x + w / 2;
-  s.text(e.name, cx, y + h * 0.2, 0.075);
+  s.text(e.name, cx, y + h * 0.2, 0.065, { family: "Yatra One" });
   s.text(e.tagline, cx, y + h * 0.36, 0.03, { weight: 500 });
   s.line(cx - w * 0.25, y + h * 0.46, cx + w * 0.25, y + h * 0.455, { w: 1.4 });
   s.text(fmtDay(e.start), cx, y + h * 0.58, 0.046);
@@ -135,7 +148,7 @@ function cushion(iso: Iso, x: number, y: number, size: number, color: string) {
 // ---------------------------------------------------------------------------
 // the rooms
 
-const HALDI = { wall: "#fff1c2", floor: "#f7ead2", accent: "#f7d77a", wood: "#e2c49a", brass: "#f0cf6e", paste: "#f6c445", water: "#cfe6f2", pot: "#e9a07c", cushion: "#f7a8a0" };
+const HALDI = { wall: "#ffe9a3", floor: "#f9e8bd", accent: "#f7d77a", wood: "#e2c49a", brass: "#f0cf6e", paste: "#f6c445", water: "#cfe6f2", pot: "#e9a07c", cushion: "#f7a8a0" };
 
 /** A long banana leaf with a midrib and side veins, growing from (x, y). */
 function bananaLeaf(s: Sketch, x: number, y: number, len: number, ang: number, w = 0.045, onCard = false) {
@@ -185,63 +198,53 @@ const haldi: Room = {
   mood: ev("haldi").tagline,
   left(s) {
     wash(s, HALDI.wall);
-    // a fringe of marigold strands along the top, over a mango-leaf toran
-    laris(s, Array.from({ length: 19 }, (_, i) => 0.04 + i * 0.05), 0.05, 0.2, 0.012);
-    toran(s, 0.0, 1.0, 0.04);
-    // banana leaves framing an arched niche with a diya
-    bananaLeaf(s, 0.22, 0.98, 0.5, -0.25, 0.05);
-    bananaLeaf(s, 0.28, 0.98, 0.42, 0.15, 0.045);
-    bananaLeaf(s, 0.78, 0.98, 0.5, 0.25, 0.05);
-    bananaLeaf(s, 0.72, 0.98, 0.42, -0.15, 0.045);
-    const niche: Pt[] = [[0.38, 0.8], [0.38, 0.6], ...s.ellipsePts(0.5, 0.6, 0.12, 0.12, Math.PI, Math.PI * 2, 14), [0.62, 0.8]];
-    s.sticker(niche, 4, 0.2, tint("#f7e2b0"));
-    s.stroke(niche, { closed: true, w: 2.4 });
-    garland(s, 0.38, 0.62, 0.5, 0.04, 0.011);
-    diya(s, 0.5, 0.78, 0.07);
-    diya(s, 0.42, 0.79, 0.04);
-    diya(s, 0.58, 0.79, 0.04);
+    // a fringe of marigold strands over a mango-leaf toran, under a darwaza border
+    teeth(s, 0, 1, 0.03, 14, 0.035, RAJ.maroon);
+    laris(s, Array.from({ length: 19 }, (_, i) => 0.04 + i * 0.05), 0.1, 0.17, 0.012);
+    toran(s, 0.0, 1.0, 0.09);
+    // a carved jharokha with diyas on its balcony, a peacock on each side
+    jharokha(s, 0.3, 0.26, 0.4, 0.6, { inner: RAJ.peacock });
+    garland(s, 0.34, 0.66, 0.36, 0.05, 0.011);
+    diya(s, 0.5, 0.726, 0.06);
+    diya(s, 0.4, 0.728, 0.04);
+    diya(s, 0.6, 0.728, 0.04);
+    peacock(s, 0.14, 0.9, 0.3, 1);
+    peacock(s, 0.86, 0.9, 0.3, -1);
+    bandhani(s, 0, 0.9, 1, 0.09, RAJ.saffron);
     // handprints left by the guests
     for (const [x, y, r] of [
-      [0.08, 0.5, 0.2],
-      [0.13, 0.62, -0.3],
-      [0.9, 0.46, 0.35],
-      [0.86, 0.6, -0.1],
+      [0.08, 0.3, 0.2],
+      [0.13, 0.42, -0.3],
+      [0.9, 0.28, 0.35],
+      [0.86, 0.4, -0.1],
     ])
       handprint(s, x, y, 0.017, r);
   },
   right(s) {
     wash(s, HALDI.wall);
-    toran(s, 0.0, 1.0, 0.04);
-    laris(s, [0.05, 0.1, 0.15, 0.85, 0.9, 0.95], 0.05, 0.5);
-    inviteCard(s, ev("haldi"), 0.28, 0.16, 0.44, 0.46, HALDI.accent);
-    garland(s, 0.28, 0.72, 0.14, 0.03, 0.011);
+    teeth(s, 0, 1, 0.03, 14, 0.035, RAJ.maroon);
+    toran(s, 0.0, 1.0, 0.09);
+    laris(s, [0.05, 0.1, 0.15, 0.85, 0.9, 0.95], 0.1, 0.5);
+    archFrame(s, 0.28, 0.2, 0.44, 0.46, RAJ.maroon);
+    inviteCard(s, ev("haldi"), 0.28, 0.2, 0.44, 0.46, HALDI.accent);
+    garland(s, 0.28, 0.72, 0.18, 0.03, 0.011);
+    lotus(s, 0.2, 0.86, 0.075, RAJ.rani, -0.15);
+    lotus(s, 0.8, 0.86, 0.075, RAJ.rani, 0.15);
+    paisley(s, 0.35, 0.8, 0.06, 0.5, RAJ.saffron);
+    paisley(s, 0.65, 0.8, 0.06, -0.5, RAJ.saffron);
+    bandhani(s, 0, 0.9, 1, 0.09, RAJ.saffron);
     for (const [x, y, r] of [
-      [0.32, 0.74, 0.3],
-      [0.4, 0.8, -0.2],
-      [0.62, 0.72, 0.1],
-      [0.7, 0.8, -0.35],
+      [0.2, 0.62, 0.3],
+      [0.8, 0.58, -0.35],
     ])
       handprint(s, x, y, 0.016, r);
   },
   floor(s) {
     if (look.color) s.washAll(tint(HALDI.floor), 1);
-    tiles(s, 8, 0.4);
+    tiles(s, 8, 0.3);
     // a rangoli of marigold petals with a diya at its heart
     const [cx, cy] = F(0.7, 0.7);
-    const ringOf = (rx: number, n: number, c: string, size: number) => {
-      for (let i = 0; i < n; i++) {
-        const a = (i / n) * Math.PI * 2;
-        const p = s.ellipsePts(cx + Math.cos(a) * rx, cy + Math.sin(a) * rx * 0.5, size, size * 0.7);
-        s.sticker(p, 0.5, 0, tint(c));
-        s.stroke(p, { closed: true, w: 1 });
-      }
-    };
-    ringOf(0.13, 30, MARIGOLD[2], 0.01);
-    ringOf(0.1, 24, MARIGOLD[1], 0.01);
-    ringOf(0.07, 16, "#f7a8a0", 0.01);
-    ringOf(0.04, 10, MARIGOLD[0], 0.009);
-    s.stroke(s.ellipsePts(cx, cy, 0.155, 0.08), { closed: true, w: 1.3 });
-    s.blob(cx, cy, 0.014, 0.008, tint(HALDI.pot), { w: 1.3 });
+    mandala(s, cx, cy, 0.15, [MARIGOLD[2], MARIGOLD[1], "#f7a8a0", MARIGOLD[0]]);
     s.shadow([F(0.28, 0.24), F(0.46, 0.24), F(0.46, 0.7), F(0.28, 0.7)], 0.2, 14);
     s.shadow(s.ellipsePts(...F(0.7, 0.14), 0.1, 0.06), 0.2, 12);
     petals(s, 50);
@@ -338,7 +341,7 @@ const haldi: Room = {
   ]),
 };
 
-const WED = { wall: "#fbe7ec", drape: "#f08bb6", drape2: "#f7d98a", floor: "#faf1e6", accent: "#f9c6da", drapeLit: "#f7b3cf", pillar: GOLD, seat: "#f5b942" };
+const WED = { wall: "#fde2bd", drape: "#e8447f", drape2: "#f5c453", floor: "#fbecd0", accent: "#f7b6cf", drapeLit: "#f27fa8", pillar: GOLD, seat: "#f5b942" };
 
 /** Draped fabric hanging in swags across the top of a wall. */
 function swags(s: Sketch, x1: number, x2: number, y: number, n: number, c: string) {
@@ -416,40 +419,38 @@ const wedding: Room = {
   mood: ev("wedding").tagline,
   left(s) {
     wash(s, WED.wall);
-    swags(s, 0.0, 1.0, 0.04, 5, WED.drape);
-    drapePanel(s, 0.08, 0.06, 0.1, WED.drape2);
-    drapePanel(s, 0.82, 0.06, 0.1, WED.drape2);
-    laris(s, [0.3, 0.38, 0.46, 0.54, 0.62, 0.7], 0.12, 0.3);
-    // a shelf of diyas
+    swags(s, 0.0, 1.0, 0.05, 5, WED.drape);
+    drapePanel(s, 0.06, 0.06, 0.1, WED.drape2);
+    drapePanel(s, 0.84, 0.06, 0.1, WED.drape2);
+    surya(s, 0.5, 0.3, 0.1);
+    laris(s, [0.24, 0.3, 0.36, 0.64, 0.7, 0.76], 0.12, 0.3);
+    // a shelf of diyas, with an elephant guarding either side
     s.sticker(s.rectPts(0.28, 0.66, 0.46, 0.025), 3, 0.18, tint("#e2c49a"));
     s.box(0.28, 0.66, 0.46, 0.025, null, { w: 2 });
     for (const x of [0.33, 0.43, 0.53, 0.63]) diya(s, x, 0.66, 0.045);
+    elephant(s, 0.15, 0.93, 0.26, 1);
+    elephant(s, 0.85, 0.93, 0.26, -1);
+    bandhani(s, 0, 0.93, 1, 0.07, RAJ.rani);
   },
   right(s) {
     wash(s, WED.wall);
-    swags(s, 0.0, 1.0, 0.04, 5, WED.drape);
-    inviteCard(s, ev("wedding"), 0.28, 0.16, 0.44, 0.46, WED.accent);
-    drapePanel(s, 0.08, 0.06, 0.1, WED.drape2);
-    drapePanel(s, 0.82, 0.06, 0.1, WED.drape2);
+    swags(s, 0.0, 1.0, 0.05, 5, WED.drape);
+    archFrame(s, 0.28, 0.2, 0.44, 0.46, RAJ.maroon);
+    inviteCard(s, ev("wedding"), 0.28, 0.2, 0.44, 0.46, WED.accent);
+    drapePanel(s, 0.06, 0.06, 0.1, WED.drape2);
+    drapePanel(s, 0.84, 0.06, 0.1, WED.drape2);
+    peacock(s, 0.17, 0.93, 0.3, 1);
+    peacock(s, 0.83, 0.93, 0.3, -1);
+    lotus(s, 0.4, 0.88, 0.07, RAJ.rani);
+    lotus(s, 0.6, 0.88, 0.07, RAJ.rani);
+    bandhani(s, 0, 0.93, 1, 0.07, RAJ.rani);
   },
   floor(s) {
     if (look.color) s.washAll(tint(WED.floor), 1);
-    tiles(s, 6, 0.35);
-    // rangoli under the mandap
+    tiles(s, 6, 0.3);
+    // a rangoli under the mandap
     const [cx, cy] = F(0.47, 0.47);
-    for (const [r, n, c] of [
-      [0.2, 16, MARIGOLD[0]],
-      [0.15, 12, "#f6b7aa"],
-      [0.1, 10, "#f7d77a"],
-    ] as const) {
-      for (let k = 0; k < n; k++) {
-        const a = (k / n) * Math.PI * 2;
-        const pts = s.ellipsePts(0, 0, r * 0.18, r * 0.42).map(([px, py]) => [cx + Math.cos(a) * r * 0.62 + px * Math.cos(a) - py * Math.sin(a), cy + Math.sin(a) * r * 0.62 + px * Math.sin(a) + py * Math.cos(a)] as Pt);
-        s.sticker(pts, 1, 0.05, tint(c));
-        s.stroke(pts, { closed: true, w: 1.2 });
-      }
-    }
-    s.circle(cx, cy, 0.035, { w: 1.6 });
+    mandala(s, cx, cy, 0.2, [RAJ.rani, RAJ.saffron, RAJ.gold, RAJ.peacock]);
   },
   popups: isoLayers([
     (iso) => {
@@ -531,9 +532,9 @@ const wedding: Room = {
 };
 
 const REC = {
-  wall: "#f6f1e7",
-  floor: "#e9e1d3",
-  accent: "#efe2c4",
+  wall: "#f8e3b8",
+  floor: "#ecd5a6",
+  accent: "#f3e0aa",
   cloth: "#fffaf0",
   cake: "#fbefd9",
   glass: "#dcebfa",
@@ -608,24 +609,27 @@ const reception: Room = {
   mood: ev("reception").tagline,
   left(s) {
     wash(s, REC.wall);
-    for (const x of [0.06, 0.78]) {
-      const win: Pt[] = [[x, 0.86], [x, 0.44], ...s.ellipsePts(x + 0.08, 0.44, 0.08, 0.1, Math.PI, Math.PI * 2, 10), [x + 0.16, 0.86]];
-      s.sticker(win, 5, 0.18, tint(REC.glass));
-      s.stroke(win, { closed: true, w: 2.4 });
-      s.line(x + 0.08, 0.36, x + 0.08, 0.86, { w: 1.6 });
-      s.line(x, 0.62, x + 0.16, 0.62, { w: 1.6 });
-    }
+    kangura(s, 0.03, 10, 0.05, RAJ.sand);
+    for (const x of [0.04, 0.76]) jharokha(s, x, 0.26, 0.2, 0.5, { inner: RAJ.night, dome: false });
     floralArch(s, 0.33, 0.67, 0.34);
     chandelier(s, 0.5, 0.12, 0.12);
-    balloons(s, 0.94, 0.32);
+    kandil(s, 0.25, 0.1, 0.035);
+    kandil(s, 0.75, 0.1, 0.035);
+    bandhani(s, 0, 0.9, 1, 0.09, RAJ.indigo);
   },
   right(s) {
     wash(s, REC.wall);
-    fairyLights(s, 0.02, 0.98, 0.06, 0.05);
-    inviteCard(s, ev("reception"), 0.28, 0.14, 0.44, 0.42, REC.accent);
-    couplePhoto(s, 0.06, 0.26, 0.13, 0.16, -0.03);
-    couplePhoto(s, 0.8, 0.2, 0.12, 0.14, 0.05);
-    balloons(s, 0.12, 0.62);
+    kangura(s, 0.03, 10, 0.05, RAJ.sand);
+    fairyLights(s, 0.02, 0.98, 0.1, 0.05);
+    archFrame(s, 0.28, 0.2, 0.44, 0.42, RAJ.indigo);
+    inviteCard(s, ev("reception"), 0.28, 0.2, 0.44, 0.42, REC.accent);
+    couplePhoto(s, 0.06, 0.3, 0.13, 0.16, -0.03);
+    couplePhoto(s, 0.8, 0.26, 0.12, 0.14, 0.05);
+    // a camel caravan crossing the wall
+    camel(s, 0.2, 0.88, 0.17, 1);
+    camel(s, 0.5, 0.88, 0.17, 1);
+    camel(s, 0.8, 0.88, 0.17, 1);
+    bandhani(s, 0, 0.9, 1, 0.09, RAJ.indigo);
   },
   floor(s) {
     if (look.color) s.washAll(tint(REC.floor), 1);
@@ -760,302 +764,135 @@ const reception: Room = {
   ]),
 };
 
-const SAN = {
-  wall: "#a3a7e0",
-  floor: "#9296d2",
-  tile: "#b3b6e8",
-  accent: "#c8c4f3",
-  speaker: "#3b3b52",
-  drum: "#f3c5cf",
-  pink: "#ff9ccc",
-  cyan: "#9fe6ff",
-  lime: "#dcf59a",
-  sun: "#ffe08a",
-  booth: "#5a5f9e",
-  bar: "#f3c5cf",
-};
-const CONFETTI = [SAN.pink, SAN.cyan, SAN.lime, SAN.sun, "#ffffff"];
+const SG = { wall: "#8fd6d2", floor: "#f8bfd4", accent: "#c4ece8", cloth: "#fff4d8", clay: "#d9794f" };
 
-/** Paper confetti: little rectangles and dots at random angles. */
-function confetti(s: Sketch, n: number, x0 = 0.04, x1 = 0.96, y0 = 0.04, y1 = 0.96, floor = false) {
-  for (let i = 0; i < n; i++) {
-    let x = x0 + s.r() * (x1 - x0);
-    let y = y0 + s.r() * (y1 - y0);
-    if (floor) [x, y] = F(x, y);
-    const c = tint(CONFETTI[i % CONFETTI.length]);
-    if (i % 3 === 0) s.blob(x, y, 0.006, 0.006, c, { w: 1 });
-    else {
-      const a = s.r() * Math.PI;
-      const dx = Math.cos(a) * 0.009;
-      const dy = Math.sin(a) * 0.009;
-      const p: Pt[] = [
-        [x - dx, y - dy],
-        [x + dx, y + dy],
-        [x + dx + dy * 0.5, y + dy - dx * 0.5],
-        [x - dx + dy * 0.5, y - dy - dx * 0.5],
-      ];
-      s.sticker(p, 0.5, 0, c);
-      s.stroke(p, { closed: true, w: 1 });
-    }
-  }
-}
-
-/** Triangle pennant bunting sagging between two points. */
-function bunting(s: Sketch, x1: number, x2: number, y: number, sag: number, n: number) {
-  const at = (t: number): Pt => [x1 + (x2 - x1) * t, y + Math.sin(t * Math.PI) * sag];
-  s.stroke(Array.from({ length: 21 }, (_, i) => at(i / 20)), { w: 1.6 });
-  for (let i = 0; i < n; i++) {
-    const a = at((i + 0.15) / n);
-    const b = at((i + 0.85) / n);
-    const tip: Pt = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 + 0.07];
-    const p: Pt[] = [a, b, tip];
-    s.sticker(p, 2, 0.12, tint(CONFETTI[i % 4]));
-    s.stroke(p, { closed: true, w: 1.5 });
-  }
-}
-
-/** A mirrored disco ball on a string, throwing little light flecks. */
-function discoBall(s: Sketch, x: number, y: number, r: number) {
-  s.line(x, 0, x, y - r, { w: 1.4 });
-  if (look.color) {
-    s.glow(x, y, r * 3.2, "#ffffff", 0.35);
-    for (let i = 0; i < 14; i++) {
-      const a = (i / 14) * Math.PI * 2 + 0.3;
-      const d = r * (2.2 + (i % 3) * 0.9);
-      s.glow(x + Math.cos(a) * d, y + Math.sin(a) * d * 0.8, 0.018, CONFETTI[i % 4], 0.7);
-    }
-  }
-  const ball = s.ellipsePts(x, y, r, r);
-  s.sticker(ball, 3, 0.2, tint("#e6e8f5"));
-  s.stroke(ball, { closed: true, w: 2 });
-  for (const k of [-0.6, -0.2, 0.2, 0.6]) {
-    s.stroke(s.ellipsePts(x, y + k * r, r * Math.sqrt(1 - k * k), r * 0.12, 0, Math.PI, 10), { w: 0.9, alpha: 0.7 });
-    s.stroke(s.ellipsePts(x + k * r, y, r * 0.14, r * Math.sqrt(1 - k * k), -Math.PI / 2, Math.PI / 2, 10), { w: 0.9, alpha: 0.7 });
-  }
-  s.line(x - r * 0.45, y - r * 0.5, x - r * 0.25, y - r * 0.6, { w: 1.6, alpha: 0.8 });
-  for (const [dx, dy, rr] of [
-    [-1.9, -0.6, 0.02],
-    [1.8, 0.4, 0.024],
-    [1.3, -1.4, 0.016],
-  ])
-    sparkle(s, x + dx * r, y + dy * r, rr);
-}
-
-/** Hand-lettered neon sign: a soft coloured glow behind doubled lettering. */
-function neon(s: Sketch, str: string, x: number, y: number, size: number, c: string, rot = 0) {
-  if (look.color) {
-    s.glow(x, y, size * 2.6, c, 0.55);
-    s.glow(x, y, size * 1.4, c, 0.5);
-  }
-  s.text(str, x, y, size, { rotate: rot });
-}
-
-const party: Room = {
-  name: "party",
-  mood: ev("party").tagline,
+const sangeet: Room = {
+  name: "sangeet",
+  mood: ev("sangeet").tagline,
   left(s) {
-    if (look.color) s.washAll(tint(SAN.wall, "#ffffff"), 1);
-    // spotlight beams from the top corners
-    if (look.color)
-      for (const [x0, x1, c] of [
-        [0.98, 0.62, SAN.pink],
-        [0.02, 0.4, SAN.cyan],
-      ] as const)
-        for (let k = 0; k < 6; k++) s.glow(x0 + (x1 - x0) * (k / 5), 0.12 + k * 0.15, 0.05 + k * 0.02, c, 0.22);
-    bunting(s, 0.0, 0.52, 0.04, 0.07, 6);
-    bunting(s, 0.48, 1.0, 0.04, 0.06, 6);
-    discoBall(s, 0.64, 0.26, 0.07);
-    neon(s, "let's dance!", 0.66, 0.54, 0.075, SAN.pink, -0.06);
-    // a neon "cheers" over the bar
-    neon(s, "cheers", 0.25, 0.44, 0.06, SAN.cyan, 0.04);
-    for (const [x, y] of [
-      [0.14, 0.38],
-      [0.36, 0.39],
-    ]) {
-      const glass: Pt[] = [[x - 0.018, y - 0.03], [x + 0.018, y - 0.03], [x, y]];
-      s.stroke(glass, { closed: true, w: 1.5 });
-      s.line(x, y, x, y + 0.03, { w: 1.5 });
-      s.line(x - 0.012, y + 0.03, x + 0.012, y + 0.03, { w: 1.5 });
-    }
-    // music notes floating up
-    for (const [x, y] of [
-      [0.9, 0.74],
-      [0.47, 0.64],
-      [0.86, 0.4],
-    ]) {
-      s.blob(x, y, 0.015, 0.012, tint(SAN.sun), { w: 1.5 });
-      s.line(x + 0.014, y, x + 0.014, y - 0.07, { w: 1.6 });
-      s.line(x + 0.014, y - 0.07, x + 0.04, y - 0.055, { w: 1.6 });
-    }
-    confetti(s, 40, 0.03, 0.97, 0.12, 0.95);
+    wash(s, SG.wall);
+    teeth(s, 0, 1, 0.03, 14, 0.035, RAJ.rani);
+    for (const [x, y, z] of [
+      [0.14, 0.09, 0.04],
+      [0.32, 0.12, 0.03],
+      [0.68, 0.12, 0.03],
+      [0.86, 0.09, 0.04],
+    ])
+      kandil(s, x, y, z);
+    surya(s, 0.5, 0.38, 0.13);
+    for (const x of [0.04, 0.76]) jharokha(s, x, 0.28, 0.2, 0.5, { inner: RAJ.indigo, dome: false });
+    garland(s, 0.28, 0.72, 0.6, 0.05, 0.012);
+    bandhani(s, 0, 0.9, 1, 0.09, RAJ.rani);
   },
   right(s) {
-    if (look.color) s.washAll(tint(SAN.wall, "#ffffff"), 1);
-    fairyLights(s, 0.02, 0.98, 0.06, 0.06);
-    inviteCard(s, ev("party"), 0.3, 0.16, 0.4, 0.44, SAN.accent);
-    // a photo-booth strip taped up next to the card
-    const strip = s.rectPts(0.08, 0.2, 0.11, 0.42);
-    s.sticker(strip, 3, 0.2, tint("#fffaf0"));
-    s.stroke(strip, { closed: true, w: 1.8 });
-    for (let k = 0; k < 3; k++) {
-      const y = 0.23 + k * 0.13;
-      s.fill(s.rectPts(0.095, y, 0.08, 0.1), tint(CONFETTI[k]), { alpha: 0.6, jitter: 0 });
-      s.rect(0.095, y, 0.08, 0.1, { w: 1.2 });
-      s.circle(0.12, y + 0.05, 0.013, { w: 1.1 });
-      s.circle(0.15, y + 0.045, 0.011, { w: 1.1 });
-      s.stroke(s.ellipsePts(0.135, y + 0.068, 0.01, 0.006, 0, Math.PI, 6), { w: 1 });
-    }
-    s.line(0.11, 0.19, 0.16, 0.21, { w: 4, alpha: 0.3 });
-    balloons(s, 0.86, 0.3);
-    for (const [x, y] of [
-      [0.78, 0.6],
-      [0.24, 0.72],
-      [0.92, 0.72],
+    wash(s, SG.wall);
+    teeth(s, 0, 1, 0.03, 14, 0.035, RAJ.rani);
+    for (const [x, y, z] of [
+      [0.12, 0.09, 0.04],
+      [0.88, 0.09, 0.04],
     ])
-      sparkle(s, x, y, 0.025);
-    confetti(s, 30, 0.03, 0.97, 0.62, 0.96);
+      kandil(s, x, y, z);
+    archFrame(s, 0.3, 0.2, 0.4, 0.44, RAJ.rani);
+    inviteCard(s, ev("sangeet"), 0.3, 0.2, 0.4, 0.44, SG.accent);
+    peacock(s, 0.14, 0.9, 0.3, 1);
+    peacock(s, 0.86, 0.9, 0.3, -1);
+    lotus(s, 0.38, 0.87, 0.07, RAJ.rani);
+    lotus(s, 0.62, 0.87, 0.07, RAJ.rani);
+    bandhani(s, 0, 0.9, 1, 0.09, RAJ.rani);
+    for (const [x, y] of [
+      [0.22, 0.4],
+      [0.78, 0.4],
+      [0.2, 0.62],
+      [0.8, 0.62],
+    ])
+      sparkle(s, x, y, 0.022);
   },
   floor(s) {
-    if (look.color) s.washAll(tint(SAN.floor, "#ffffff"), 1);
-    const n = 6;
-    const lit = [SAN.pink, SAN.cyan, SAN.lime, SAN.sun];
-    for (let i = 0; i < n; i++)
-      for (let j = 0; j < n; j++) {
-        const sq = [F(i / n, j / n), F((i + 1) / n, j / n), F((i + 1) / n, (j + 1) / n), F(i / n, (j + 1) / n)];
-        if ((i * 7 + j * 3) % 5 === 0 && i > 1 && j > 1) {
-          if (look.color) s.fill(sq, tint(lit[(i + j) % 4], "#ffffff"), { alpha: 0.9, jitter: 0.2 });
-        } else if ((i + j) % 2) {
-          if (look.color) s.fill(sq, tint(SAN.tile, "#ffffff"), { alpha: 1, jitter: 0.2 });
-          else s.hatch(sq, 0.02, -0.8, 1, 0.22);
-        }
-      }
-    tiles(s, n, 0.5);
-    if (look.color) {
-      s.glow(...F(0.6, 0.6), 0.35, "#ffd56b", 0.25);
-      s.glow(...F(0.45, 0.75), 0.2, SAN.pink, 0.35);
-      s.glow(...F(0.75, 0.45), 0.2, SAN.cyan, 0.35);
-    }
-    s.shadow([F(0.2, 0.04), F(0.58, 0.04), F(0.58, 0.2), F(0.2, 0.2)], 0.22, 14);
-    s.shadow([F(0.04, 0.6), F(0.2, 0.6), F(0.2, 0.92), F(0.04, 0.92)], 0.22, 14);
-    confetti(s, 60, 0.25, 0.97, 0.25, 0.97, true);
+    if (look.color) s.washAll(tint(SG.floor), 1);
+    tiles(s, 6, 0.3);
+    const [cx, cy] = F(0.58, 0.58);
+    mandala(s, cx, cy, 0.24, [RAJ.turmeric, RAJ.peacock, RAJ.rani, RAJ.indigo]);
+    s.shadow([F(0.04, 0.04), F(0.56, 0.04), F(0.56, 0.4), F(0.04, 0.4)], 0.2, 14);
+    scatter(s, 40, 0.25, 0.95, 0.25, 0.95);
   },
   popups: isoLayers([
     (iso) => {
-      // speakers either side of the dj booth
-      for (const [a, h] of [
-        [0.05, 0.4],
-        [0.62, 0.34],
+      // a gaddi (floor seating) stage in the corner, with bolsters, a harmonium and two dholaks
+      iso.box(0.04, 0.04, 0, 0.52, 0.36, 0.06, WHITE, { color: SG.cloth });
+      iso.box(0.06, 0.05, 0.06, 0.04, 0.34, 0.07, WHITE, { color: RAJ.rani });
+      iso.box(0.06, 0.05, 0.06, 0.48, 0.04, 0.07, WHITE, { color: RAJ.turmeric });
+      iso.box(0.13, 0.08, 0.06, 0.12, 0.09, 0.05, WHITE, { color: RAJ.clay });
+      iso.at([0.19, 0.17, 0.115], (s, [x, y], u) => {
+        for (let k = -2; k <= 2; k++) s.line(x + k * 0.02 * u, y, x + k * 0.02 * u, y + 0.02 * u, { w: 1, mask: true });
+      });
+      for (const [a, b] of [
+        [0.34, 0.16],
+        [0.42, 0.3],
       ]) {
-        iso.box(a, 0.04, 0, 0.12, 0.12, h, WHITE, { color: SAN.speaker });
-        iso.at([a + 0.06, 0.16, h * 0.68], (s, [x, y], u) => {
-          s.circle(x, y, 0.035 * u, { w: 1.8, mask: true });
-          s.circle(x, y, 0.012 * u, { w: 1.4, mask: true });
+        iso.cyl(a, b, 0.06, 0.05, 0.1, WHITE, { color: RAJ.clay });
+        iso.at([a, b, 0.11], (s, [x, y], u) => {
+          for (let k = -2; k <= 2; k++) s.line(x + k * 0.02 * u, y - 0.05 * u, x + k * 0.025 * u, y + 0.05 * u, { w: 1, mask: true });
         });
-        iso.at([a + 0.06, 0.16, h * 0.28], (s, [x, y], u) => s.circle(x, y, 0.025 * u, { w: 1.6, mask: true }));
+        iso.disc(a, b, 0.16, 0.05, tint("#f3e3c0"), { w: 1.4 });
       }
-      // dj booth with two decks, a laptop and headphones
-      iso.box(0.2, 0.05, 0, 0.38, 0.13, 0.26, WHITE, { color: SAN.booth });
-      iso.at([0.39, 0.18, 0.13], (s, [x, y], u) => {
-        if (look.color) s.glow(x, y, 0.07 * u, SAN.pink, 0.6);
-        s.text("t&z", x, y, 0.045 * u, { rotate: -0.45 });
-      });
-      for (const a of [0.27, 0.5]) {
-        iso.disc(a, 0.115, 0.26, 0.045, tint("#2f3146"), { w: 1.4 });
-        iso.disc(a, 0.115, 0.262, 0.012, tint(SAN.pink), { w: 1.1 });
-      }
-      iso.face(
-        [
-          [0.36, 0.08, 0.26],
-          [0.43, 0.08, 0.26],
-          [0.43, 0.08, 0.33],
-          [0.36, 0.08, 0.33],
-        ],
-        tint("#dfe3f7"),
-        { w: 1.6 },
-      );
-      iso.at([0.44, 0.15, 0.27], (s, [x, y], u) => {
-        s.stroke(s.ellipsePts(x, y, 0.02 * u, 0.018 * u, Math.PI, Math.PI * 2, 10), { w: 1.6, mask: true });
-        s.blob(x - 0.02 * u, y, 0.007 * u, 0.01 * u, tint(SAN.cyan), { w: 1.2, mask: true });
-        s.blob(x + 0.02 * u, y, 0.007 * u, 0.01 * u, tint(SAN.cyan), { w: 1.2, mask: true });
-      });
-      // the bar along the left wall, with bottles and glasses
-      iso.box(0.04, 0.6, 0, 0.15, 0.32, 0.27, WHITE, { color: SAN.bar });
-      iso.box(0.03, 0.59, 0.27, 0.17, 0.34, 0.02, WHITE, { color: "#fffaf0" });
-      for (const [b, c, h] of [
-        [0.64, SAN.lime, 0.09],
-        [0.69, SAN.pink, 0.11],
-        [0.74, SAN.cyan, 0.08],
-      ] as const) {
-        iso.cyl(0.09, b, 0.29, 0.014, h, WHITE, { r2: 0.014, color: c });
-        iso.cyl(0.09, b, 0.29 + h, 0.006, 0.03, WHITE, { r2: 0.005, color: c });
-      }
-      for (const b of [0.8, 0.86])
-        iso.at([0.12, b, 0.29], (s, [x, y], u) => {
-          const g: Pt[] = [[x - 0.014 * u, y - 0.04 * u], [x + 0.014 * u, y - 0.04 * u], [x, y - 0.018 * u]];
-          s.shape(g, tint(SAN.sun), { mask: true, w: 1.2 });
-          s.line(x, y - 0.018 * u, x, y, { w: 1.1, mask: true });
-          s.line(x - 0.008 * u, y, x + 0.008 * u, y, { w: 1.1, mask: true });
-        });
     },
     (iso) => {
-      // a bunch of balloons tied to a weight, and a mic stand on the floor
-      iso.cyl(0.86, 0.3, 0, 0.025, 0.03, WHITE, { color: SAN.sun });
-      iso.at([0.86, 0.3, 0.03], (s, [x, y], u) => {
-        const list: [number, number, string][] = [
-          [-0.05, -0.42, SAN.pink],
-          [0.04, -0.46, SAN.cyan],
-          [0.0, -0.52, SAN.sun],
-          [0.06, -0.38, SAN.lime],
-          [-0.03, -0.35, "#ffffff"],
-        ];
-        for (const [dx, dy] of list) s.stroke([[x, y], [x + dx * 0.4 * u, y + dy * 0.5 * u], [x + dx * u, y + (dy + 0.03) * u]], { w: 1, mask: true });
-        for (const [dx, dy, c] of list) {
-          s.shape(s.ellipsePts(x + dx * u, y + dy * u, 0.03 * u, 0.037 * u), tint(c), { mask: true, w: 1.6 });
-          s.line(x + (dx - 0.012) * u, y + (dy - 0.016) * u, x + (dx - 0.006) * u, y + (dy - 0.024) * u, { w: 1.4, alpha: 0.7, mask: true });
-        }
-      });
-      iso.disc(0.5, 0.36, 0, 0.04, tint("#cfcfd8"), { w: 1.6 });
-      iso.line([0.5, 0.36, 0], [0.5, 0.36, 0.42], { w: 2.4 });
-      iso.line([0.5, 0.36, 0.42], [0.54, 0.4, 0.46], { w: 2.4 });
-      iso.at([0.55, 0.41, 0.47], (s, [x, y], u) => s.blob(x, y, 0.016 * u, 0.02 * u, tint("#cfcfd8"), { w: 1.6, mask: true }));
-      // a dholak left on the dance floor
-      iso.cyl(0.3, 0.5, 0, 0.06, 0.14, WHITE, { color: SAN.drum });
-      iso.at([0.3, 0.5, 0.07], (s, [x, y], u) => {
-        for (let k = -2; k <= 2; k++) s.line(x + k * 0.02 * u, y - 0.06 * u, x + k * 0.025 * u, y + 0.06 * u, { w: 1, mask: true });
-      });
+      // a caparisoned elephant, standing as a flat pop-up in front
+      const A = 0.74;
+      const B = 0.62;
+      const at = (dx: number, z: number): [number, number, number] => [A + dx * 0.7071, B - dx * 0.7071, z];
+      iso.p(at(-0.24, 0));
+      iso.p(at(0.27, 0));
+      iso.p(at(0, 0.45));
+      iso.at([A, B, 0], (s, [x, y], u) => elephant(s, x, y, 0.4 * u, 1, true));
     },
   ]),
 };
 
-export const ROOMS: Room[] = [haldi, wedding, reception, party];
+export const ROOMS: Room[] = [haldi, sangeet, wedding, reception];
 
 // ---------------------------------------------------------------------------
 // covers
 
 export function drawFrontCover(s: Sketch) {
-  if (look.color) s.washAll(tint("#fbe9e1"), 1);
-  // the page outline is the border now (house-shaped); flowers sit in its lower corners
-  for (const [x, y] of [
-    [0.09, 0.91],
-    [0.91, 0.91],
-  ])
-    flower(s, x, y, 0.018, MARIGOLD[0]);
-  garland(s, 0.1, 0.9, 0.06, 0.08, 0.013);
-  s.text(WEDDING.hosts, 0.5, 0.3, 0.035, { weight: 500 });
-  s.text(WEDDING.couple[0], 0.5, 0.42, 0.11);
-  s.text("&", 0.5, 0.52, 0.06, { weight: 500 });
-  s.text(WEDDING.couple[1], 0.5, 0.62, 0.11);
+  if (look.color) s.washAll(tint("#fbc24a"), 1);
+  // a rani-pink bandhani band, then the blessing
+  bandhani(s, 0.06, 0.07, 0.88, 0.055, RAJ.rani);
+  s.text(WEDDING.blessing, 0.5, 0.165, 0.036, { weight: 500 });
+  // the couple's names inside a cusped arch with a little dome on top
+  const arch = cuspArch(0.16, 0.84, 0.72, 0.4, 0.28, 7);
+  s.sticker(arch, 5, 0.25, tint(RAJ.ivory));
+  s.stroke(arch, { closed: true, w: 3 });
+  const inner = cuspArch(0.2, 0.8, 0.69, 0.42, 0.31, 7);
+  s.stroke(inner, { closed: true, w: 1.5, alpha: 0.8 });
+  s.fill(inner, tint(RAJ.gold), { alpha: 0.28, jitter: 0 });
+  chhatri(s, 0.5, 0.265, 0.12);
+  surya(s, 0.5, 0.385, 0.04);
+  s.text(WEDDING.couple[0], 0.5, 0.49, 0.1, { family: "Yatra One" });
+  s.text("weds", 0.5, 0.565, 0.036, { weight: 500 });
+  s.text(WEDDING.couple[1], 0.5, 0.64, 0.1, { family: "Yatra One" });
+  // peacocks and lotuses flank the arch
+  peacock(s, 0.16, 0.78, 0.2, 1);
+  peacock(s, 0.84, 0.78, 0.2, -1);
+  lotus(s, 0.5, 0.715, 0.05, RAJ.rani);
+  paisley(s, 0.14, 0.2, 0.045, 0.5, RAJ.rani);
+  paisley(s, 0.86, 0.2, 0.045, -0.5, RAJ.rani);
+  s.text(WEDDING.greeting, 0.5, 0.815, 0.044, { family: "Yatra One" });
   const first = WEDDING.events[0].start;
   const last = WEDDING.events[WEDDING.events.length - 1].start;
-  s.text(`${fmtDay(first).split(" ").slice(1).join(" ")} – ${fmtDay(last).split(" ").slice(1).join(" ")} · ${WEDDING.city}`, 0.5, 0.72, 0.035, { weight: 500 });
+  s.text(`${fmtDay(first).split(" ").slice(1).join(" ")} – ${fmtDay(last).split(" ").slice(1).join(" ")} · ${WEDDING.city}`, 0.5, 0.865, 0.033, { weight: 500 });
   const g = getGuest();
-  if (g) {
-    s.line(0.3, 0.8, 0.7, 0.795, { w: 1.2 });
-    s.text(`for ${g}`, 0.5, 0.84, 0.042);
-  }
+  if (g) s.text(`for ${g}`, 0.5, 0.91, 0.04);
 }
 
 export function drawBackCover(s: Sketch) {
-  if (look.color) s.washAll(tint("#fbe9e1"), 1);
-  s.text("with love", 0.5, 0.5, 0.06, { weight: 500 });
+  if (look.color) s.washAll(tint("#f07aa5"), 1);
+  bandhani(s, 0.06, 0.07, 0.88, 0.055, RAJ.saffron);
+  bandhani(s, 0.06, 0.875, 0.88, 0.055, RAJ.saffron);
+  surya(s, 0.5, 0.36, 0.14);
+  s.text("with love & blessings", 0.5, 0.6, 0.052, { weight: 500 });
+  s.text(`see you in ${WEDDING.city}`, 0.5, 0.67, 0.044, { weight: 500 });
+  s.text(WEDDING.initials, 0.5, 0.76, 0.06);
+  peacock(s, 0.17, 0.85, 0.2, 1);
+  peacock(s, 0.83, 0.85, 0.2, -1);
 }

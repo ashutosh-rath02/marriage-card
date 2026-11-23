@@ -7,7 +7,7 @@ export type Pen = "sketchy" | "clean";
 export const look: { pen: Pen; color: boolean } = { pen: "sketchy", color: true };
 
 /** How far the pastel palette is pulled towards white, so the colour stays a hint. */
-const SOFTEN = 0.25;
+const SOFTEN = 0.08;
 
 /** Mix a hex colour towards white. */
 export function soften(hex: string, amt = SOFTEN) {

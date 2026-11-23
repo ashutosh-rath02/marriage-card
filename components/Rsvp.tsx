@@ -130,7 +130,7 @@ export default function Rsvp({ onClose, preselect }: { onClose: () => void; pres
               </div>
               <label className="rsvp-field">
                 <span>a note for the couple</span>
-                <textarea rows={2} value={note} placeholder="can't wait to dance at the party!" onChange={(e) => setNote(e.target.value)} />
+                <textarea rows={2} value={note} placeholder="can't wait to dance at the sangeet!" onChange={(e) => setNote(e.target.value)} />
               </label>
               <div className="ev-actions">
                 {error && <span className="cu-error">{error}</span>}
