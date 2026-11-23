@@ -7,7 +7,7 @@ import { Line } from "@react-three/drei";
 import * as THREE from "three";
 import type { Line2 } from "three-stdlib";
 import { G, H, L, N, dirOf, roofLift, floorApex, focusAngle, focusOf, logicalOf, normalOf, pageAngles, roomOpenness, smooth } from "@/lib/fold";
-import { makePaperMaterial, INK } from "@/lib/paperMaterial";
+import { makePaperMaterial, shimmer, INK } from "@/lib/paperMaterial";
 import { ROOMS } from "@/lib/invite";
 import { book } from "@/lib/store";
 import type { BookTextures } from "@/lib/textures";
@@ -244,7 +244,8 @@ export default function Book({ tex, onSpot }: { tex: BookTextures; onSpot: (room
   const popRefs = useRef<{ outer: THREE.Group | null; hinge: THREE.Group | null }[][]>(Array.from({ length: N }, () => []));
   const target = useMemo(() => new THREE.Vector3(), []);
 
-  useFrame((_, dtRaw) => {
+  useFrame(({ clock }, dtRaw) => {
+    shimmer.value = clock.elapsedTime;
     const dt = Math.min(dtRaw, 1 / 20);
     if (!book.dragging) book.f += (book.target - book.f) * (1 - Math.exp(-dt * 7));
     book.open += (book.openTarget - book.open) * (1 - Math.exp(-dt * 7));

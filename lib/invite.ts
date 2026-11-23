@@ -7,7 +7,7 @@ import { look, tint } from "./style";
 import type { Room } from "./rooms";
 import { F, almondLeaf, fairyLights, flower, soft, sparkle, tapedPhoto, tiles } from "./rooms";
 import { WEDDING, fmtDay, fmtTime, getGuest, type WeddingEvent } from "./wedding";
-import { RAJ, bandhani, crown, camel, chhatri, cuspArch, elephant, jharokha, kandil, kangura, lotus, mandala, paisley, peacock, scatter, surya, teeth } from "./rajasthan";
+import { RAJ, bandhani, cornerFan, crown, curve, dotLine, camel, chhatri, cuspArch, elephant, jharokha, kandil, kangura, lotus, mandala, paisley, peacock, scatter, surya, teeth } from "./rajasthan";
 
 const MARIGOLD = ["#f4a43b", "#f7c948", "#f08a3c"];
 const LEAF = "#a9d98f";
@@ -275,7 +275,7 @@ const haldi: Room = {
       const at = (dx: number, z: number): [number, number, number] => [A + dx * 0.7071, B - dx * 0.7071, z];
       iso.p(at(-0.33, 0));
       iso.p(at(0.4, 0));
-      iso.p(at(0, 0.6));
+      iso.p(at(0, 0.7));
       iso.at([A, B, 0], (s, [x, y], u) => camel(s, x, y, 0.5 * u, 1, true));
     },
     (iso) => {
@@ -437,16 +437,26 @@ const wedding: Room = {
       // the roof: a maroon slab edged in gold, with a ribbed dome and finial above it
       iso.box(0.15, 0.15, TOP + 0.01, 0.66, 0.66, 0.04, WHITE, { color: RAJ.maroon });
       iso.box(0.13, 0.13, TOP + 0.05, 0.7, 0.7, 0.015, WHITE, { color: WED.pillar });
-      iso.p([0.48, 0.48, TOP + 0.4]);
+      iso.p([0.48, 0.48, TOP + 0.5]);
       iso.at([0.48, 0.48, TOP + 0.065], (s, [x, y], u) => {
-        const w = 0.2 * u;
-        s.shape(s.ellipsePts(x, y, w * 1.12, 0.07 * u, 0, Math.PI * 2, 20), tint(RAJ.maroon), { w: 1.8, mask: true });
-        const dome = s.ellipsePts(x, y, w, 0.2 * u, Math.PI, Math.PI * 2, 16);
-        s.shape(dome, tint(RAJ.gold), { w: 2, mask: true });
-        for (const k of [-0.6, -0.3, 0, 0.3, 0.6]) s.stroke(s.ellipsePts(x, y, w * Math.abs(k) + 0.0001, 0.2 * u, Math.PI, Math.PI * 2, 8), { w: 1, alpha: 0.6, mask: true });
-        s.line(x, y - 0.2 * u, x, y - 0.27 * u, { w: 1.8, mask: true });
-        s.blob(x, y - 0.285 * u, 0.012 * u, 0.016 * u, tint(RAJ.maroon), { w: 1.3, mask: true });
+        const w = 0.19 * u;
+        const h = 0.34 * u;
+        // a bulbous onion dome with a pointed top, ribs, a rim and a golden finial
+        s.shape(s.ellipsePts(x, y, w * 1.1, 0.07 * u, 0, Math.PI * 2, 20), tint(RAJ.maroon), { w: 1.8, mask: true });
+        const outline: Pt[] = curve([[x - w, y], [x - w * 1.08, y - h * 0.3], [x - w * 0.78, y - h * 0.62], [x - w * 0.28, y - h * 0.85], [x, y - h * 1.08], [x + w * 0.28, y - h * 0.85], [x + w * 0.78, y - h * 0.62], [x + w * 1.08, y - h * 0.3], [x + w, y]], false, 6);
+        s.shape(outline, tint(RAJ.gold), { w: 2, mask: true });
+        for (const k of [-0.62, -0.3, 0, 0.3, 0.62]) s.stroke(curve([[x + w * k, y - 0.01 * u], [x + w * k * 1.08, y - h * 0.33], [x + w * k * 0.7, y - h * 0.66], [x + w * k * 0.1, y - h * 1.02]], false, 5), { w: 1, alpha: 0.6, mask: true });
+        s.line(x, y - h * 1.08, x, y - h * 1.28, { w: 1.8, mask: true });
+        s.blob(x, y - h * 1.3, 0.014 * u, 0.018 * u, tint(RAJ.maroon), { w: 1.3, mask: true });
+        s.blob(x, y - h * 1.17, 0.012 * u, 0.009 * u, tint(RAJ.gold), { w: 1, mask: true });
       });
+      // four little domes at the corners of the roof
+      for (const [a, b] of [[0.2, 0.2], [0.78, 0.2], [0.2, 0.78], [0.78, 0.78]] as const)
+        iso.at([a, b, TOP + 0.065], (s, [x, y], u) => {
+          const w = 0.05 * u;
+          s.shape(curve([[x - w, y], [x - w * 1.05, y - w * 0.8], [x - w * 0.3, y - w * 1.6], [x, y - w * 2.2], [x + w * 0.3, y - w * 1.6], [x + w * 1.05, y - w * 0.8], [x + w, y]], false, 5), tint(RAJ.gold), { w: 1.6, mask: true });
+          s.line(x, y - w * 2.2, x, y - w * 2.9, { w: 1.4, mask: true });
+        });
       // marigold laris hanging from the roof's front edges
       for (const b of [0.26, 0.38, 0.5, 0.62, 0.74])
         iso.at([0.81, b, TOP], (s, [x, y], u) => {
@@ -726,7 +736,14 @@ export function drawFrontCover(s: Sketch) {
   if (look.color) s.washAll(tint("#fbc24a"), 1);
   crown(s, "lotus", RAJ.rani);
   // a rani-pink bandhani band, then the blessing
-  bandhani(s, 0.06, 0.07, 0.88, 0.055, RAJ.rani);
+  cornerFan(s, 0.065, 0.065, 0.08, 1, 1);
+  cornerFan(s, 0.935, 0.065, 0.08, -1, 1);
+  cornerFan(s, 0.065, 0.935, 0.08, 1, -1);
+  cornerFan(s, 0.935, 0.935, 0.08, -1, -1);
+  dotLine(s, 0.065, 0.19, 0.065, 0.81, 16);
+  dotLine(s, 0.935, 0.19, 0.935, 0.81, 16);
+  dotLine(s, 0.19, 0.945, 0.81, 0.945, 16);
+  bandhani(s, 0.18, 0.07, 0.64, 0.055, RAJ.rani);
   s.text(WEDDING.blessing, 0.5, 0.165, 0.036, { weight: 500 });
   // the couple's names inside a cusped arch with a little dome on top
   const arch = cuspArch(0.16, 0.84, 0.72, 0.4, 0.28, 7);
@@ -757,8 +774,14 @@ export function drawFrontCover(s: Sketch) {
 export function drawBackCover(s: Sketch) {
   if (look.color) s.washAll(tint("#f07aa5"), 1);
   crown(s, "lotus", RAJ.saffron);
-  bandhani(s, 0.06, 0.07, 0.88, 0.055, RAJ.saffron);
-  bandhani(s, 0.06, 0.875, 0.88, 0.055, RAJ.saffron);
+  cornerFan(s, 0.065, 0.065, 0.08, 1, 1, RAJ.saffron, RAJ.maroon);
+  cornerFan(s, 0.935, 0.065, 0.08, -1, 1, RAJ.saffron, RAJ.maroon);
+  cornerFan(s, 0.065, 0.935, 0.08, 1, -1, RAJ.saffron, RAJ.maroon);
+  cornerFan(s, 0.935, 0.935, 0.08, -1, -1, RAJ.saffron, RAJ.maroon);
+  dotLine(s, 0.065, 0.19, 0.065, 0.81, 16, RAJ.saffron);
+  dotLine(s, 0.935, 0.19, 0.935, 0.81, 16, RAJ.saffron);
+  bandhani(s, 0.18, 0.07, 0.64, 0.055, RAJ.saffron);
+  bandhani(s, 0.18, 0.875, 0.64, 0.055, RAJ.saffron);
   surya(s, 0.5, 0.36, 0.14);
   s.text("with love & blessings", 0.5, 0.6, 0.052, { weight: 500 });
   s.text(`see you in ${WEDDING.city}`, 0.5, 0.67, 0.044, { weight: 500 });

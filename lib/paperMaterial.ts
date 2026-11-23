@@ -18,6 +18,7 @@ const fragment = /* glsl */ `
   uniform float uReveal;   // 0 = line art only, 1 = coloured in
   uniform float uInkAmt;   // how strongly the drawing reads
   uniform float uSeed;
+  uniform float uTime;
   uniform float uBlankBack; // pop-ups: plain paper on the back
   uniform float uFlat;      // covers: no shading or hatching
   uniform float uOpacity;   // pop-ups fade in
@@ -61,6 +62,13 @@ const fragment = /* glsl */ `
     float h = smoothstep(0.075, 0.025, d) * dark * 0.34;
     col = mix(col, uInk, h);
 
+    // gold catches the light: a slow sweep of sheen and a few twinkles, only on gold-coloured paint
+    float gold = smoothstep(0.8, 0.9, wash.r) * smoothstep(0.55, 0.65, wash.g) * (1.0 - smoothstep(0.8, 0.9, wash.g)) * (1.0 - smoothstep(0.35, 0.5, wash.b));
+    float sweep = smoothstep(0.09, 0.0, abs(fract((vUv.x + vUv.y * 0.6) * 0.8 - uTime * 0.07) - 0.5));
+    vec2 cell = floor(vUv * 260.0);
+    float twinkle = step(0.985, hash(cell + floor(uTime * 1.6 + hash(cell) * 6.0))) * (0.5 + 0.5 * sin(uTime * 7.0 + hash(cell) * 6.28));
+    col += gold * uReveal * (1.0 - uFlat * 0.3) * (sweep * 0.1 + twinkle * 0.5) * vec3(1.0, 0.9, 0.55);
+
     // the drawing itself
     col = mix(col, uInk, ink * uInkAmt);
     gl_FragColor = vec4(col, uOpacity);
@@ -68,6 +76,9 @@ const fragment = /* glsl */ `
 `;
 
 const light = new THREE.Vector3(-0.55, 0.7, 0.45).normalize();
+
+/** Shared clock for the shimmer (set once per frame by the book). */
+export const shimmer = { value: 0 };
 
 export function makePaperMaterial(tex: THREE.Texture, opts: { side?: THREE.Side; blankBack?: boolean; seed?: number; flat?: boolean | number; transparent?: boolean } = {}) {
   return new THREE.ShaderMaterial({
@@ -79,6 +90,7 @@ export function makePaperMaterial(tex: THREE.Texture, opts: { side?: THREE.Side;
       uReveal: { value: 0 },
       uInkAmt: { value: 1 },
       uSeed: { value: opts.seed ?? Math.random() * 10 },
+      uTime: shimmer,
       uBlankBack: { value: opts.blankBack ? 1 : 0 },
       uOpacity: { value: 1 },
       uFlat: { value: typeof opts.flat === "number" ? opts.flat : opts.flat ? 1 : 0 },

@@ -337,97 +337,119 @@ function tassels(s: Sketch, pts: Pt[], len: number, mask = false) {
   }
 }
 
+type Part = [Pt[], boolean];
+/** One closed silhouette from alternating smooth (curved) and straight runs of points. */
+const outline = (parts: Part[]): Pt[] => parts.flatMap(([pts, smooth]) => (smooth ? curve(pts, false, 6) : pts));
+
+/** Draw a flat shape the way the animals are painted: paper sticker, optional pop-up mask, pen outline. */
+function painted(s: Sketch, pts: Pt[], color: string | null, mask: boolean, w = 1.8, halo = 1) {
+  if (color) {
+    s.sticker(pts, halo, 0.1, color);
+    if (mask) s.maskFill(pts);
+  } else if (mask) s.maskFill(pts);
+  s.stroke(pts, { closed: true, w, mask });
+}
+
 /** A caparisoned elephant (side view). (x, y) = ground under its middle, `size` = body length. */
 export function elephant(s: Sketch, x: number, y: number, size: number, dir = 1, mask = false) {
-  const skin = tint("#c3bac4");
-  const dark = tint("#aaa1ad");
-  const P = (pts: Pt[]) => place(pts, x, y, size, dir);
-  const piece = (pts: Pt[], c: string | null, w = 1.8) => {
-    if (c) {
-      s.sticker(pts, 1, 0.1, c);
-      if (mask) s.maskFill(pts);
-    } else if (mask) s.maskFill(pts);
-    s.stroke(pts, { closed: true, w, mask });
-  };
-  const ell = (cx: number, cy: number, rx: number, ry: number, rot = 0) => place(s.ellipsePts(0, 0, rx, ry, 0, Math.PI * 2, 24), cx, cy, 1, 1, rot);
-  const Q = (pts: Pt[]) => pts.map(([a, b]) => place([[a, b]], x, y, size, dir)[0]);
-  // legs (far pair first), each with a golden anklet
-  const leg = (lx: number, c: string) => {
-    piece(Q([[lx - 0.075, -0.34], [lx + 0.075, -0.34], [lx + 0.085, -0.02], [lx + 0.09, 0], [lx - 0.09, 0], [lx - 0.085, -0.02]]), c);
-    piece(Q([[lx - 0.085, -0.09], [lx + 0.085, -0.09], [lx + 0.088, -0.05], [lx - 0.088, -0.05]]), tint(RAJ.gold), 1.1);
-  };
-  leg(-0.3, dark);
-  leg(0.16, dark);
-  // body
-  piece(Q(ell(-0.04, -0.46, 0.44, 0.27)), skin, 2);
-  leg(-0.38, skin);
-  leg(0.28, skin);
+  const skin = tint("#c6bec8");
+  const dark = tint("#a69eae");
+  const Q = (pts: Pt[]) => place(pts, x, y, size, dir);
+  const one = (p: Pt) => Q([p])[0];
+  const leg = (c: number, shade: string) => Q([[c - 0.07, -0.3], [c + 0.07, -0.3], [c + 0.07, 0], [c - 0.07, 0]]);
+  // the whole animal as one silhouette: back, head, trunk curling forward, four legs
+  const body = outline([
+    [[[-0.45, -0.62], [-0.3, -0.72], [-0.05, -0.75], [0.15, -0.73], [0.27, -0.81], [0.36, -0.9], [0.48, -0.87], [0.55, -0.75], [0.58, -0.6], [0.64, -0.44], [0.66, -0.24], [0.62, -0.09], [0.55, -0.03], [0.5, -0.08], [0.54, -0.22], [0.52, -0.38], [0.47, -0.5], [0.4, -0.44], [0.37, -0.32]], true],
+    [[[0.37, -0.03], [0.37, 0], [0.23, 0], [0.23, -0.03], [0.23, -0.26]], false],
+    [[[0.23, -0.26], [0.2, -0.29], [0.17, -0.26]], true],
+    [[[0.17, -0.03], [0.17, 0], [0.03, 0], [0.03, -0.03], [0.03, -0.26]], false],
+    [[[0.03, -0.26], [-0.05, -0.29], [-0.13, -0.26]], true],
+    [[[-0.13, -0.03], [-0.13, 0], [-0.27, 0], [-0.27, -0.03], [-0.27, -0.26]], false],
+    [[[-0.27, -0.26], [-0.29, -0.28], [-0.31, -0.26]], true],
+    [[[-0.31, -0.03], [-0.31, 0], [-0.45, 0], [-0.45, -0.03], [-0.45, -0.3]], false],
+    [[[-0.45, -0.3], [-0.5, -0.42], [-0.5, -0.55], [-0.45, -0.62]], true],
+  ]);
+  painted(s, Q(body), skin, mask, 2.2);
+  // the far legs a shade darker
+  for (const c of [-0.2, 0.1]) s.fill(leg(c, dark), dark, { alpha: 0.55, jitter: 0, mask });
   // tail
-  s.stroke(curve(Q([[-0.45, -0.5], [-0.52, -0.4], [-0.5, -0.28]]), false, 6), { w: 1.8, mask });
-  // head, trunk, ear
-  piece(Q(ell(0.4, -0.6, 0.17, 0.2, -0.3)), skin, 2);
-  piece(Q(thick([[0.5, -0.55], [0.58, -0.4], [0.57, -0.2], [0.49, -0.07], [0.43, -0.1]], 0.15, 0.06)), skin, 1.8);
-  piece(Q(ell(0.32, -0.58, 0.085, 0.14, 0.2)), dark, 1.5);
-  s.stroke(curve(Q([[0.5, -0.5], [0.62, -0.46], [0.64, -0.36]]), false, 6), { w: 2.4, mask });
-  const [ex, ey] = Q([[0.46, -0.66]])[0];
-  s.circle(ex, ey, size * 0.012, { w: 1.5, mask });
-  // painted forehead and trunk stripes
-  s.fill(Q([[0.4, -0.78], [0.49, -0.7], [0.53, -0.58], [0.46, -0.64], [0.42, -0.7]]), tint(RAJ.rani), { alpha: 0.95, jitter: 0 });
-  for (const [a, b] of [[0.575, -0.32], [0.565, -0.22]] as Pt[]) {
-    const [px, py] = Q([[a, b]])[0];
-    s.circle(px, py, size * 0.012, { w: 1, alpha: 0.7, mask });
-  }
-  // blanket with a scalloped hem, gold trim and a medallion
+  s.stroke(curve(Q([[-0.49, -0.54], [-0.55, -0.42], [-0.53, -0.3]]), false, 6), { w: 1.8, mask });
+  s.blob(...(one([-0.53, -0.27]) as Pt), size * 0.015, size * 0.03, dark, { w: 1.2, mask });
+  // ear, eye and tusk
+  painted(s, curve(Q([[0.18, -0.78], [0.32, -0.8], [0.37, -0.62], [0.31, -0.46], [0.2, -0.5], [0.15, -0.64]]), true, 6), dark, mask, 1.5, 0.5);
+  s.circle(...(one([0.47, -0.73]) as Pt), size * 0.013, { w: 1.6, mask });
+  s.fill(Q([[0.5, -0.74], [0.54, -0.74], [0.52, -0.7]]), tint("#8a7f8e"), { alpha: 0.5, jitter: 0, mask });
+  painted(s, Q(thick([[0.55, -0.6], [0.66, -0.56], [0.71, -0.46]], 0.04, 0.008)), tint("#fffaf0"), mask, 1.4, 0.5);
+  // painted forehead with jewels, and gold bands on the trunk
+  s.fill(curve(Q([[0.34, -0.89], [0.46, -0.86], [0.53, -0.74], [0.57, -0.6], [0.5, -0.65], [0.45, -0.77], [0.37, -0.84]]), true, 5), tint(RAJ.rani), { alpha: 0.95, jitter: 0, mask });
+  for (const [a, b] of [[0.4, -0.86], [0.46, -0.82], [0.5, -0.75]] as Pt[]) s.blob(...(one([a, b]) as Pt), size * 0.011, size * 0.011, tint(RAJ.gold), { w: 1, mask });
+  for (const [yy, x0, x1] of [[-0.4, 0.5, 0.645], [-0.28, 0.53, 0.655], [-0.16, 0.53, 0.645]] as [number, number, number][])
+    s.fill(Q([[x0, yy], [x1, yy - 0.012], [x1, yy + 0.02], [x0, yy + 0.03]]), tint(RAJ.gold), { alpha: 1, jitter: 0, mask });
+  // anklets
+  for (const c of [-0.38, -0.2, 0.1, 0.3]) s.fill(Q([[c - 0.07, -0.1], [c + 0.07, -0.1], [c + 0.07, -0.06], [c - 0.07, -0.06]]), tint(RAJ.gold), { alpha: 1, jitter: 0, mask });
+  // the jhool (embroidered blanket) with a scalloped hem, a gold stripe and medallions
   const hem: Pt[] = [];
-  for (let k = 0; k <= 5; k++) hem.push([0.14 - k * 0.088, k % 2 ? -0.26 : -0.31]);
-  const blanket = [...curve(Q([[-0.33, -0.62], [-0.2, -0.675], [0.0, -0.69], [0.12, -0.66], [0.18, -0.6]]), false, 5), ...Q([[0.17, -0.45], ...hem, [-0.34, -0.45]])];
-  piece(blanket, tint(RAJ.maroon), 1.8);
-  s.stroke(Q([[-0.3, -0.5], [-0.28, -0.6], [0.14, -0.6], [0.14, -0.47], [-0.3, -0.5]]), { w: 1, alpha: 0.7, mask });
-  tassels(s, Q([[-0.3, -0.3], [-0.2, -0.26], [-0.1, -0.3], [0.0, -0.26], [0.1, -0.3]]), size * 0.04, mask);
-  const [mx, my] = Q([[-0.08, -0.45]])[0];
-  s.blob(mx, my, size * 0.06, size * 0.06, tint(RAJ.gold), { w: 1.3, mask });
-  s.circle(mx, my, size * 0.026, { w: 1, mask });
-  // howdah (a little canopy seat) on top
-  piece(Q([[-0.24, -0.675], [0.06, -0.675], [0.06, -0.79], [-0.24, -0.79]]), tint(RAJ.rani), 1.7);
-  for (const px of [-0.2, -0.09, 0.02]) s.line(...(Q([[px, -0.79]])[0] as Pt), ...(Q([[px, -0.95]])[0] as Pt), { w: 1.4, mask });
-  piece(Q([[-0.27, -0.95], ...s.ellipsePts(-0.09, -0.95, 0.19, 0.12, Math.PI, Math.PI * 2, 10), [0.09, -0.95]]), tint(RAJ.gold), 1.7);
-  const [kx, ky] = Q([[-0.09, -1.07]])[0];
-  s.line(kx, ky, kx, ky - size * 0.06, { w: 1.5, mask });
-  s.blob(kx, ky - size * 0.07, size * 0.016, size * 0.016, tint(RAJ.maroon), { w: 1, mask });
+  for (let k = 0; k <= 8; k++) hem.push([0.2 - k * 0.0775, k % 2 ? -0.3 : -0.35]);
+  const jhool = curve(Q([[-0.44, -0.58], [-0.32, -0.71], [-0.05, -0.745], [0.14, -0.72], [0.2, -0.6], ...hem, [-0.45, -0.46]]), true, 4);
+  painted(s, jhool, tint(RAJ.maroon), mask, 1.8, 0.6);
+  s.fill(Q([[-0.43, -0.54], [0.2, -0.54], [0.2, -0.49], [-0.44, -0.49]]), tint(RAJ.gold), { alpha: 1, jitter: 0, mask });
+  for (const [mx, my] of [[-0.28, -0.6], [-0.05, -0.64], [0.13, -0.62]] as Pt[]) {
+    s.blob(...(one([mx, my]) as Pt), size * 0.05, size * 0.05, tint(RAJ.gold), { w: 1.2, mask });
+    s.circle(...(one([mx, my]) as Pt), size * 0.02, { w: 1, mask });
+  }
+  tassels(s, Q([[-0.38, -0.33], [-0.26, -0.3], [-0.14, -0.33], [-0.02, -0.3], [0.1, -0.33], [0.18, -0.32]]), size * 0.04, mask);
+  // howdah: a gold platform, a rani seat under a golden onion dome
+  painted(s, Q([[-0.31, -0.745], [0.12, -0.745], [0.12, -0.78], [-0.31, -0.78]]), tint(RAJ.gold), mask, 1.6, 0.5);
+  painted(s, Q([[-0.27, -0.78], [0.08, -0.78], [0.08, -0.87], [-0.27, -0.87]]), tint(RAJ.rani), mask, 1.6, 0.5);
+  for (const px of [-0.25, -0.1, 0.06]) s.line(...(one([px, -0.87]) as Pt), ...(one([px, -0.95]) as Pt), { w: 1.3, mask });
+  painted(s, curve(Q([[-0.32, -0.95], [-0.3, -1.0], [-0.2, -1.05], [-0.1, -1.15], [0.0, -1.05], [0.1, -1.0], [0.12, -0.95]]), false, 6), tint(RAJ.gold), mask, 1.6, 0.5);
+  s.line(...(one([-0.1, -1.15]) as Pt), ...(one([-0.1, -1.21]) as Pt), { w: 1.4, mask });
+  s.blob(...(one([-0.1, -1.23]) as Pt), size * 0.014, size * 0.014, tint(RAJ.maroon), { w: 1, mask });
 }
 
 /** A saddled camel (side view). (x, y) = ground under its middle, `size` = body length. */
 export function camel(s: Sketch, x: number, y: number, size: number, dir = 1, mask = false) {
-  const skin = tint("#e9c58c");
+  const skin = tint("#ebc88f");
   const dark = tint("#d2ad74");
   const Q = (pts: Pt[]) => place(pts, x, y, size, dir);
-  const piece = (pts: Pt[], c: string | null, w = 1.8) => {
-    if (c) s.sticker(pts, 1, 0.1, c);
-    if (mask) s.maskFill(pts);
-    s.stroke(pts, { closed: true, w, mask });
-  };
-  const ell = (cx: number, cy: number, rx: number, ry: number, rot = 0) => place(s.ellipsePts(0, 0, rx, ry, 0, Math.PI * 2, 24), cx, cy, 1, 1, rot);
-  const leg = (lx: number, c: string) => piece(Q([[lx - 0.045, -0.42], [lx + 0.045, -0.42], [lx + 0.03, -0.22], [lx + 0.045, -0.19], [lx + 0.03, -0.01], [lx + 0.05, 0], [lx - 0.04, 0], [lx - 0.03, -0.02], [lx - 0.035, -0.2], [lx - 0.05, -0.23]]), c, 1.6);
-  leg(-0.28, dark);
-  leg(0.2, dark);
-  s.stroke(curve(Q([[-0.4, -0.55], [-0.46, -0.45], [-0.45, -0.32]]), false, 6), { w: 1.8, mask });
-  piece(Q(ell(-0.04, -0.55, 0.4, 0.18)), skin, 2);
-  piece(Q(ell(-0.14, -0.74, 0.11, 0.1)), skin, 1.8);
-  leg(-0.36, skin);
-  leg(0.28, skin);
-  piece(Q(thick([[0.22, -0.6], [0.3, -0.75], [0.36, -0.93], [0.42, -1.04]], 0.15, 0.08)), skin, 1.8);
-  piece(Q(ell(0.5, -1.04, 0.12, 0.055, 0.25)), skin, 1.8);
-  const [ex, ey] = Q([[0.47, -1.07]])[0];
-  s.circle(ex, ey, size * 0.011, { w: 1.4, mask });
-  // saddle blanket, gold band, tassels, neck bell
-  const blanket = Q([[-0.32, -0.66], [0.14, -0.66], [0.2, -0.5], [0.18, -0.34], [-0.3, -0.34], [-0.36, -0.5]]);
-  piece(blanket, tint(RAJ.rani), 1.8);
-  piece(Q([[-0.33, -0.44], [0.19, -0.44], [0.19, -0.4], [-0.33, -0.4]]), tint(RAJ.turmeric), 1.1);
-  tassels(s, Q([[-0.28, -0.34], [-0.16, -0.34], [-0.04, -0.34], [0.08, -0.34], [0.16, -0.34]]), size * 0.035, mask);
-  const [nx, ny] = Q([[0.31, -0.74]])[0];
-  s.blob(nx, ny, size * 0.03, size * 0.03, tint(RAJ.turmeric), { w: 1.3, mask });
-  const [hx, hy] = Q([[-0.14, -0.84]])[0];
-  s.blob(hx, hy, size * 0.035, size * 0.035, tint(RAJ.gold), { w: 1.3, mask });
+  const one = (p: Pt) => Q([p])[0];
+  const legPts = (c: number): Pt[] => [[c + 0.05, -0.42], [c + 0.032, -0.2], [c + 0.036, -0.04], [c + 0.055, 0], [c - 0.045, 0], [c - 0.032, -0.04], [c - 0.03, -0.2], [c - 0.05, -0.42]];
+  const body = outline([
+    [[[-0.42, -0.6], [-0.35, -0.72], [-0.27, -0.92], [-0.13, -1.02], [0.01, -0.93], [0.08, -0.74], [0.18, -0.72], [0.28, -0.82], [0.35, -0.98], [0.41, -1.12], [0.47, -1.22], [0.57, -1.27], [0.67, -1.23], [0.75, -1.16], [0.78, -1.1], [0.72, -1.06], [0.62, -1.08], [0.52, -1.05], [0.46, -0.95], [0.43, -0.82], [0.4, -0.68], [0.38, -0.55]], true],
+    [legPts(0.31), false],
+    [[[0.265, -0.42], [0.245, -0.445], [0.225, -0.42]], true],
+    [legPts(0.18), false],
+    [[[0.135, -0.42], [0.0, -0.46], [-0.155, -0.43]], true],
+    [legPts(-0.2), false],
+    [[[-0.245, -0.42], [-0.265, -0.44], [-0.285, -0.42]], true],
+    [legPts(-0.33), false],
+    [[[-0.375, -0.42], [-0.42, -0.5], [-0.42, -0.6]], true],
+  ]);
+  painted(s, Q(body), skin, mask, 2.2);
+  for (const c of [0.18, -0.2]) s.fill(Q(legPts(c)), dark, { alpha: 0.5, jitter: 0, mask });
+  for (const c of [0.31, 0.18, -0.2, -0.33]) s.fill(Q([[c - 0.05, -0.09], [c + 0.05, -0.09], [c + 0.052, -0.055], [c - 0.052, -0.055]]), tint(RAJ.gold), { alpha: 1, jitter: 0, mask });
+  // tail
+  s.stroke(curve(Q([[-0.41, -0.62], [-0.5, -0.52], [-0.5, -0.36]]), false, 6), { w: 1.8, mask });
+  s.blob(...(one([-0.5, -0.33]) as Pt), size * 0.016, size * 0.03, dark, { w: 1.1, mask });
+  // head details: ear, eye, nostril, bridle
+  painted(s, curve(Q([[0.49, -1.25], [0.46, -1.35], [0.54, -1.31]]), true, 5), dark, mask, 1.2, 0.4);
+  s.circle(...(one([0.62, -1.19]) as Pt), size * 0.012, { w: 1.5, mask });
+  s.circle(...(one([0.765, -1.11]) as Pt), size * 0.007, { w: 1.1, mask });
+  s.stroke(Q([[0.52, -1.14], [0.64, -1.14], [0.73, -1.1]]), { w: 1.2, alpha: 0.8, mask });
+  s.blob(...(one([0.56, -1.12]) as Pt), size * 0.015, size * 0.015, tint(RAJ.gold), { w: 1, mask });
+  // saddle blanket: rani pink, gold stripe, medallions, tassels
+  const hem: Pt[] = [];
+  for (let k = 0; k <= 6; k++) hem.push([0.2 - k * 0.097, k % 2 ? -0.4 : -0.45]);
+  painted(s, curve(Q([[-0.38, -0.62], [-0.3, -0.71], [0.1, -0.71], [0.2, -0.64], [0.2, -0.52], ...hem, [-0.4, -0.52]]), true, 4), tint(RAJ.rani), mask, 1.8, 0.6);
+  s.fill(Q([[-0.39, -0.58], [0.2, -0.58], [0.2, -0.53], [-0.4, -0.53]]), tint(RAJ.turmeric), { alpha: 1, jitter: 0, mask });
+  for (const mx of [-0.25, -0.08, 0.1]) s.blob(...(one([mx, -0.65]) as Pt), size * 0.028, size * 0.028, tint(RAJ.gold), { w: 1.1, mask });
+  tassels(s, Q([[-0.35, -0.42], [-0.24, -0.45], [-0.13, -0.42], [-0.02, -0.45], [0.09, -0.42], [0.18, -0.44]]), size * 0.04, mask);
+  // a rani cap with a tassel on the hump, and a gold garland and bell on the neck
+  painted(s, curve(Q([[-0.2, -0.93], [-0.12, -1.0], [-0.04, -0.93], [-0.12, -0.88]]), true, 5), tint(RAJ.rani), mask, 1.4, 0.4);
+  s.line(...(one([-0.12, -1.0]) as Pt), ...(one([-0.12, -1.05]) as Pt), { w: 1.3, mask });
+  s.blob(...(one([-0.12, -1.07]) as Pt), size * 0.014, size * 0.014, tint(RAJ.gold), { w: 1, mask });
+  for (const [gx, gy] of [[0.33, -0.86], [0.37, -0.96], [0.41, -1.06]] as Pt[]) s.blob(...(one([gx, gy]) as Pt), size * 0.022, size * 0.022, tint(RAJ.gold), { w: 1.1, mask });
+  s.blob(...(one([0.42, -0.78]) as Pt), size * 0.032, size * 0.032, tint(RAJ.turmeric), { w: 1.3, mask });
 }
 
 /** Colour a hex a touch darker (for the far legs). */
@@ -499,4 +521,35 @@ export function crown(s: Sketch, kind: "sun" | "lotus" = "sun", accent = RAJ.ran
   paisley(s, 0.25, -0.09, 0.045, 0.9, accent);
   paisley(s, 0.75, -0.09, 0.045, -0.9, accent);
   for (const [x, y] of [[0.34, -0.2], [0.66, -0.2], [0.17, -0.03], [0.83, -0.03]] as Pt[]) s.star(x, y, 0.016, { w: 1.2 });
+}
+
+/** A quarter fan of petals growing out of a corner (sx, sy = ±1 point it into the page). */
+export function cornerFan(s: Sketch, x: number, y: number, r: number, sx: number, sy: number, c1 = RAJ.rani, c2 = RAJ.maroon) {
+  const n = 7;
+  for (let k = 0; k < n; k++) {
+    const a = ((k + 0.5) / n) * (Math.PI / 2);
+    const dx = Math.cos(a) * sx;
+    const dy = Math.sin(a) * sy;
+    const nx = -dy;
+    const ny = dx;
+    const w = r * 0.17;
+    const petal = curve([[x, y], [x + dx * r * 0.5 + nx * w, y + dy * r * 0.5 + ny * w], [x + dx * r, y + dy * r], [x + dx * r * 0.5 - nx * w, y + dy * r * 0.5 - ny * w]], true, 6);
+    s.sticker(petal, 0.8, 0.05, tint(k % 2 ? c2 : c1));
+    s.stroke(petal, { closed: true, w: 1.2 });
+  }
+  const arc = s.ellipsePts(x, y, r * 1.1, r * 1.1, 0, Math.PI * 2, 40).filter(([px, py]) => (px - x) * sx >= -1e-6 && (py - y) * sy >= -1e-6);
+  s.stroke(arc, { w: 1.4 });
+  for (let k = 0; k <= 8; k++) {
+    const a = (k / 8) * (Math.PI / 2);
+    s.blob(x + Math.cos(a) * sx * r * 1.22, y + Math.sin(a) * sy * r * 1.22, r * 0.035, r * 0.035, tint(RAJ.gold), { w: 1 });
+  }
+  s.blob(x, y, r * 0.1, r * 0.1, tint(RAJ.gold), { w: 1.2 });
+}
+
+/** A line of alternating gold and accent dots, the cover's inner frame. */
+export function dotLine(s: Sketch, x0: number, y0: number, x1: number, y1: number, n: number, accent = RAJ.rani) {
+  for (let i = 0; i <= n; i++) {
+    const t = i / n;
+    s.blob(x0 + (x1 - x0) * t, y0 + (y1 - y0) * t, 0.0075, 0.0075, tint(i % 2 ? RAJ.gold : accent), { w: 1 });
+  }
 }
