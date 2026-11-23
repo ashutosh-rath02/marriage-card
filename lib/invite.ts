@@ -2,11 +2,12 @@
 // Each room has an invite card pinned on its right wall (clickable: it opens the details).
 
 import type { Pt, Sketch } from "./sketch";
-import { isoLayers, WHITE, type Iso } from "./iso";
+import { isoLayers, WHITE, type Iso, type V3 } from "./iso";
 import { look, tint } from "./style";
 import type { Room } from "./rooms";
 import { F, almondLeaf, fairyLights, flower, soft, sparkle, tapedPhoto, tiles } from "./rooms";
 import { WEDDING, fmtDay, fmtTime, getGuest, type WeddingEvent } from "./wedding";
+import { roofLift } from "./fold";
 import { RAJ, bandhani, cornerFan, crown, curve, dotLine, camel, chhatri, cuspArch, elephant, jharokha, kandil, kangura, lotus, mandala, paisley, peacock, scatter, surya, teeth } from "./rajasthan";
 
 const MARIGOLD = ["#f4a43b", "#f7c948", "#f08a3c"];
@@ -269,14 +270,21 @@ const haldi: Room = {
       iso.cyl(0.47, 0.27, 0.09, 0.022, 0.03, WHITE, { r2: 0.03, color: HALDI.brass });
     },
     (iso) => {
-      // a camel in its festival blanket, standing as a flat pop-up
-      const A = 0.66;
-      const B = 0.52;
-      const at = (dx: number, z: number): [number, number, number] => [A + dx * 0.7071, B - dx * 0.7071, z];
-      iso.p(at(-0.33, 0));
-      iso.p(at(0.4, 0));
-      iso.p(at(0, 0.7));
-      iso.at([A, B, 0], (s, [x, y], u) => camel(s, x, y, 0.5 * u, 1, true));
+      // a wide brass urli of water with marigolds and rose petals floating in it
+      iso.cyl(0.62, 0.5, 0, 0.14, 0.07, WHITE, { r2: 0.19, color: HALDI.brass });
+      iso.disc(0.62, 0.5, 0.07, 0.165, tint(HALDI.water), { w: 1.4 });
+      iso.at([0.62, 0.5, 0.07], (s, [x, y], u) => {
+        const bits: [number, number, string][] = [[-0.07, -0.01, MARIGOLD[0]], [0.02, -0.02, "#f7a8a0"], [0.08, 0.005, MARIGOLD[1]], [-0.02, 0.02, MARIGOLD[2]], [0.0, 0.0, "#f7a8a0"], [-0.1, 0.02, MARIGOLD[1]], [0.11, -0.015, MARIGOLD[0]]];
+        for (const [dx, dy, c] of bits) flower(s, x + dx * u, y + dy * u * 0.7, 0.014 * u, c, true);
+      });
+      // a pair of tall brass lamp stands (deepmala), each topped with a lit diya
+      for (const [a, b] of [[0.84, 0.18], [0.4, 0.84]] as const) {
+        iso.cyl(a, b, 0, 0.04, 0.03, WHITE, { r2: 0.03, color: HALDI.brass });
+        iso.cyl(a, b, 0.03, 0.009, 0.3, WHITE, { color: HALDI.brass });
+        iso.cyl(a, b, 0.33, 0.03, 0.015, WHITE, { r2: 0.04, color: HALDI.brass });
+        iso.at([a, b, 0.345], (s, [x, y], u) => diya(s, x, y, 0.06 * u));
+        iso.p([a, b, 0.5]);
+      }
     },
     (iso) => {
       // a ring of diyas on the floor in front
@@ -557,7 +565,6 @@ const reception: Room = {
     crown(s, "sun", RAJ.indigo);
     kangura(s, 0.03, 10, 0.05, RAJ.sand);
     for (const x of [0.04, 0.76]) jharokha(s, x, 0.26, 0.2, 0.5, { inner: RAJ.night, dome: false });
-    floralArch(s, 0.33, 0.67, 0.34);
     chandelier(s, 0.5, 0.12, 0.12);
     kandil(s, 0.25, 0.1, 0.035);
     kandil(s, 0.75, 0.1, 0.035);
@@ -572,10 +579,10 @@ const reception: Room = {
     inviteCard(s, ev("reception"), 0.28, 0.2, 0.44, 0.42, REC.accent);
     couplePhoto(s, 0.06, 0.3, 0.13, 0.16, -0.03);
     couplePhoto(s, 0.8, 0.26, 0.12, 0.14, 0.05);
-    // a camel caravan crossing the wall
-    camel(s, 0.2, 0.88, 0.17, 1);
-    camel(s, 0.5, 0.88, 0.17, 1);
-    camel(s, 0.8, 0.88, 0.17, 1);
+    lotus(s, 0.18, 0.86, 0.065, RAJ.indigo);
+    lotus(s, 0.82, 0.86, 0.065, RAJ.indigo);
+    paisley(s, 0.4, 0.82, 0.05, 0.5, RAJ.gold);
+    paisley(s, 0.6, 0.82, 0.05, -0.5, RAJ.gold);
     bandhani(s, 0, 0.9, 1, 0.09, RAJ.indigo);
   },
   floor(s) {
@@ -595,47 +602,70 @@ const reception: Room = {
         const [px, py] = F(a, b);
         s.blob(px, py, 0.008, 0.006, tint(REC.blush), { w: 1 });
       }
-    s.shadow(s.ellipsePts(...F(0.14, 0.14), 0.1, 0.1), 0.22, 14);
-    s.shadow([F(0.04, 0.34), F(0.2, 0.34), F(0.2, 0.66), F(0.04, 0.66)], 0.22, 14);
-    s.shadow(s.ellipsePts(...F(0.62, 0.74), 0.17, 0.14), 0.22, 16);
+    s.shadow([F(0.02, 0.1), F(0.28, 0.1), F(0.28, 0.5), F(0.02, 0.5)], 0.22, 14);
   },
   popups: isoLayers([
     (iso) => {
-      // a maharaja's throne in the corner: cushioned seat, tall gold back with a cusped arch
-      iso.box(0.1, 0.1, 0, 0.36, 0.3, 0.14, WHITE, { color: RAJ.maroon });
-      iso.box(0.1, 0.1, 0.14, 0.34, 0.28, 0.04, WHITE, { color: RAJ.rani });
-      iso.box(0.1, 0.1, 0.18, 0.05, 0.28, 0.3, WHITE, { color: RAJ.gold });
-      iso.p([0.12, 0.24, 0.62]);
-      iso.at([0.125, 0.24, 0.3], (s, [x, y], u) => {
-        const arch = cuspArch(x - 0.12 * u, x + 0.12 * u, y + 0.1 * u, y - 0.04 * u, y - 0.2 * u, 3, 30);
-        s.shape(arch, tint(RAJ.rani), { w: 1.6, mask: true });
-        s.circle(x, y - 0.03 * u, 0.03 * u, { w: 1.3, mask: true });
-      });
-      // two tall brass lamp stands either side
-      for (const b of [0.06, 0.46])
-        for (const a of [0.1]) {
-          iso.cyl(a, b, 0, 0.03, 0.04, WHITE, { r2: 0.025, color: HALDI.brass });
-          iso.cyl(a, b, 0.04, 0.008, 0.28, WHITE, { color: HALDI.brass });
-          iso.at([a, b, 0.32], (s, [x, y], u) => diya(s, x, y, 0.05 * u));
+      // a small raised stage in the corner against the left wall (s = along the wall, d = out from it)
+      const k = 0.58;
+      const o = 0.08; // gap from the corner
+      const X = (s: number) => o + s * k;
+      const box = (s: number, d: number, z: number, ds: number, dd: number, dz: number, c: string) => iso.box(d * k, X(s), z * k, dd * k, ds * k, dz * k, WHITE, { color: c });
+      box(0.08, 0.04, 0, 0.64, 0.4, 0.07, RAJ.gold);
+      box(0.08, 0.44, 0, 0.64, 0.07, 0.035, RAJ.gold);
+      box(0.12, 0.08, 0.07, 0.56, 0.32, 0.012, RAJ.maroon);
+      // the backdrop: a cusped gold arch on the wall behind, with a rani panel, a sun face and a marigold garland
+      const arch = (pad: number, top: number): V3[] => {
+        const pts: V3[] = [[0.045 * k, X(0.1 + pad), 0.07 * k]];
+        for (let i = 0; i <= 28; i++) {
+          const q = i / 28;
+          pts.push([0.045 * k, X(0.1 + pad + (0.6 - 2 * pad) * q), (0.34 + (top - 0.34) * roofLift(q)) * k]);
         }
+        pts.push([0.045 * k, X(0.7 - pad), 0.07 * k]);
+        return pts;
+      };
+      iso.face(arch(0, 0.86), tint(RAJ.gold), { w: 2 });
+      iso.face(arch(0.05, 0.8), tint(RAJ.rani), { w: 1.4 });
+      iso.face(arch(0.1, 0.72), tint(RAJ.maroon), { w: 1.2 });
+      iso.at([0.045 * k, X(0.4), 0.48 * k], (s, [x, y], u) => surya(s, x, y - 0.02 * u, 0.035 * u));
+      for (let i = 0; i <= 14; i++) {
+        const q = i / 14;
+        iso.at([0.045 * k, X(0.1 + 0.6 * q), (0.34 + 0.52 * roofLift(q) + 0.005) * k], (s, [x, y], u) => s.blob(x, y, 0.008 * u, 0.008 * u, tint(MARIGOLD[i % 3]), { w: 1, mask: true }));
+      }
+      // two cushioned chairs side by side
+      for (const a of [0.2, 0.44]) {
+        box(a, 0.12, 0.082, 0.17, 0.2, 0.07, RAJ.maroon);
+        box(a, 0.12, 0.152, 0.17, 0.04, 0.2, RAJ.maroon);
+        box(a - 0.02, 0.12, 0.082, 0.025, 0.2, 0.11, RAJ.gold);
+        box(a + 0.165, 0.12, 0.082, 0.025, 0.2, 0.11, RAJ.gold);
+        box(a + 0.03, 0.17, 0.152, 0.11, 0.12, 0.03, RAJ.turmeric);
+      }
     },
     (iso) => {
-      // a low round feast table on the dhurrie: a brass thali of sweets, bowls and a jug
-      iso.cyl(0.64, 0.6, 0, 0.17, 0.1, WHITE, { color: REC.cloth });
-      iso.disc(0.64, 0.6, 0.1, 0.15, tint(RAJ.turmeric), { w: 1.4 });
-      iso.disc(0.64, 0.6, 0.102, 0.09, tint(HALDI.brass), { w: 1.2 });
-      for (let k = 0; k < 6; k++) {
-        const a = (k / 6) * Math.PI * 2;
-        iso.disc(0.64 + Math.cos(a) * 0.115, 0.6 + Math.sin(a) * 0.115, 0.102, 0.024, tint([RAJ.rani, RAJ.saffron, RAJ.emerald][k % 3]), { w: 1.1 });
+      // a pair of small brass urns of flowers at the stage's open end, and two lamp stands in front
+      const k = 0.58;
+      const o = 0.08;
+      for (const [d, s] of [[0.1, 0.78], [0.3, 0.78]] as const) {
+        const cd = d * k;
+        const cs = o + s * k;
+        iso.cyl(cd, cs, 0, 0.03, 0.08, WHITE, { r2: 0.042, color: HALDI.brass });
+        iso.cyl(cd, cs, 0.08, 0.042, 0.03, WHITE, { r2: 0.027, color: HALDI.brass });
+        iso.p([cd, cs, 0.24]);
+        iso.at([cd, cs, 0.11], (sk, [x, y], u) => {
+          for (let q = 0; q < 7; q++) {
+            const ang = -Math.PI + (q / 6) * Math.PI;
+            sk.blob(x + Math.cos(ang) * 0.05 * u, y + Math.sin(ang) * 0.06 * u - 0.02 * u, 0.017 * u, 0.015 * u, tint([RAJ.rani, MARIGOLD[1], MARIGOLD[0]][q % 3]), { w: 1.1, mask: true });
+          }
+          sk.blob(x, y - 0.04 * u, 0.019 * u, 0.017 * u, tint(RAJ.rani), { w: 1.2, mask: true });
+        });
       }
-      iso.cyl(0.64, 0.6, 0.1, 0.022, 0.06, WHITE, { r2: 0.03, color: HALDI.brass });
-      // floor cushions round the table
-      for (const [a, b, c] of [
-        [0.4, 0.58, RAJ.rani],
-        [0.64, 0.86, RAJ.turmeric],
-        [0.88, 0.62, RAJ.peacock],
-      ] as const)
-        iso.box(a - 0.07, b - 0.07, 0, 0.14, 0.14, 0.05, WHITE, { color: c });
+      for (const s of [0.14, 0.66]) {
+        const cs = o + s * k;
+        iso.cyl(0.5 * k, cs, 0, 0.022, 0.02, WHITE, { r2: 0.016, color: HALDI.brass });
+        iso.cyl(0.5 * k, cs, 0.02, 0.006, 0.15, WHITE, { color: HALDI.brass });
+        iso.at([0.5 * k, cs, 0.17], (sk, [x, y], u) => diya(sk, x, y, 0.04 * u));
+        iso.p([0.5 * k, cs, 0.26]);
+      }
     },
   ]),
 };
@@ -760,7 +790,7 @@ export function drawFrontCover(s: Sketch) {
     s.text(bride, 0.5, 0.48, fit(bride), { family: "Yatra One" });
     s.text("weds", 0.5, 0.55, 0.036, { weight: 500 });
     s.text(groom, 0.5, 0.62, fit(groom), { family: "Yatra One" });
-    s.text(WEDDING.hosts, 0.5, 0.675, 0.026, { weight: 500 });
+    if (WEDDING.hosts) s.text(WEDDING.hosts, 0.5, 0.675, 0.026, { weight: 500 });
   } else {
     s.text(bride, 0.5, 0.5, fit(bride) * 1.25, { family: "Yatra One" });
     s.text("and family invite you", 0.5, 0.6, 0.036, { weight: 500 });

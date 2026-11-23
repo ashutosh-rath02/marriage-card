@@ -17,7 +17,7 @@ export const WEDDING = {
   city: "jaipur",
   greeting: "padharo mhare desh",
   blessing: "shree ganeshaya namah",
-  hosts: "her family joyfully invites you",
+  hosts: "", // optional line under the names, e.g. "her family joyfully invites you"
   rsvpBy: "15 jan 2027",
   events: [
     {
@@ -104,7 +104,7 @@ export function applyEdits(e: Edits) {
   const ini = (n: string) => (n.trim().split(/\s+/).pop() ?? "")[0] ?? "";
   WEDDING.initials = WEDDING.couple.map(ini).filter(Boolean).join(" & ");
   if (clean(e.city, 30)) WEDDING.city = clean(e.city, 30).toLowerCase();
-  if (clean(e.hosts, 60)) WEDDING.hosts = clean(e.hosts, 60).toLowerCase();
+  if (e.hosts !== undefined) WEDDING.hosts = clean(e.hosts, 60).toLowerCase();
   if (clean(e.greeting, 40)) WEDDING.greeting = clean(e.greeting, 40).toLowerCase();
   if (clean(e.rsvpBy, 24)) WEDDING.rsvpBy = clean(e.rsvpBy, 24).toLowerCase();
   if (e.guest !== undefined) setGuest(e.guest);
