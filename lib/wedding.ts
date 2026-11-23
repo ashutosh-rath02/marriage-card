@@ -12,8 +12,8 @@ export type WeddingEvent = {
 };
 
 export const WEDDING = {
-  couple: ["aarav", "meera"] as const,
-  initials: "a & m",
+  couple: ["mr x", "vishika"] as const,
+  initials: "x & v",
   city: "jaipur",
   greeting: "padharo mhare desh",
   blessing: "shree ganeshaya namah",

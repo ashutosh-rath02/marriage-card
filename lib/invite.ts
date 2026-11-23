@@ -98,20 +98,16 @@ function inviteCard(s: Sketch, e: WeddingEvent, x: number, y: number, w: number,
   s.stroke(card, { closed: true, w: 2.6 });
   s.fill(s.rectPts(x + 0.015, y + 0.015, w - 0.03, h - 0.03), tint(accent), { alpha: 0.35, jitter: 0 });
   s.rect(x + 0.015, y + 0.015, w - 0.03, h - 0.03, { w: 1.3 });
-  for (const [cx, cy] of [
-    [x + 0.015, y + 0.015],
-    [x + w - 0.015, y + 0.015],
-    [x + 0.015, y + h - 0.015],
-    [x + w - 0.015, y + h - 0.015],
-  ])
-    flower(s, cx, cy, 0.01, accent);
+  paisley(s, x + 0.03, y + 0.03, 0.017, 0.6, RAJ.rani);
+  paisley(s, x + w - 0.03, y + 0.03, 0.017, -0.6, RAJ.rani);
+  bandhani(s, x + 0.015, y + h - 0.045, w - 0.03, 0.03, RAJ.maroon);
   const cx = x + w / 2;
   s.text(e.name, cx, y + h * 0.2, 0.065, { family: "Yatra One" });
   s.text(e.tagline, cx, y + h * 0.36, 0.03, { weight: 500 });
   s.line(cx - w * 0.25, y + h * 0.46, cx + w * 0.25, y + h * 0.455, { w: 1.4 });
   s.text(fmtDay(e.start), cx, y + h * 0.58, 0.046);
   s.text(fmtTime(e.start), cx, y + h * 0.7, 0.04, { weight: 500 });
-  s.text(e.venue, cx, y + h * 0.84, 0.03, { weight: 500 });
+  s.text(e.venue, cx, y + h * 0.8, 0.028, { weight: 500 });
   // little pin
   s.blob(cx, y + 0.005, 0.012, 0.012, tint("#f6a99a"), { w: 1.6 });
 }
@@ -251,92 +247,41 @@ const haldi: Room = {
   },
   popups: isoLayers([
     (iso) => {
-      // banana plant in a clay pot in the corner
-      iso.cyl(0.09, 0.09, 0, 0.05, 0.09, WHITE, { r2: 0.06, color: HALDI.pot });
-      iso.at([0.09, 0.09, 0.09], (s, [x, y], u) => {
-        for (const [ang, len] of [
-          [-0.7, 0.3],
-          [-0.2, 0.36],
-          [0.3, 0.33],
-          [0.8, 0.26],
-        ])
-          bananaLeaf(s, x, y, len * u, ang, 0.035 * u, true);
-      });
-      // basket of marigolds by the left wall
-      iso.cyl(0.1, 0.78, 0, 0.07, 0.07, WHITE, { r2: 0.09, color: HALDI.wood });
-      iso.at([0.1, 0.78, 0.07], (s, [x, y], u) => {
-        for (let k = 0; k < 8; k++) {
-          const a = (k / 8) * Math.PI * 2;
-          s.blob(x + Math.cos(a) * 0.05 * u, y + Math.sin(a) * 0.025 * u - 0.012 * u, 0.02 * u, 0.017 * u, tint(MARIGOLD[k % 3]), { w: 1.3, mask: true });
-        }
-        s.blob(x, y - 0.02 * u, 0.02 * u, 0.017 * u, tint(MARIGOLD[1]), { w: 1.3, mask: true });
-      });
-      // a brass urli by the right wall, with flowers floating in it
-      iso.cyl(0.7, 0.14, 0, 0.06, 0.05, WHITE, { r2: 0.1, color: HALDI.brass });
-      iso.disc(0.7, 0.14, 0.05, 0.085, tint(HALDI.water), { w: 1.3 });
-      iso.at([0.7, 0.14, 0.05], (s, [x, y], u) => {
-        for (const [dx, dy, c] of [
-          [-0.04, 0, MARIGOLD[0]],
-          [0.03, -0.01, "#f7a8a0"],
-          [0, 0.015, MARIGOLD[1]],
-          [0.05, 0.012, MARIGOLD[2]],
-        ] as const)
-          flower(s, x + dx * u, y + dy * u, 0.01 * u, c, true);
-      });
-    },
-    (iso) => {
-      // the haldi swing (jhoola): two posts and a beam wound with marigolds, strands hanging down
-      const A = 0.36;
-      const B0 = 0.28;
-      const B1 = 0.68;
-      const TOP = 0.66;
-      const post = (b: number) => {
-        iso.box(A - 0.03, b - 0.03, 0, 0.06, 0.06, 0.03, WHITE, { color: HALDI.wood });
-        iso.box(A - 0.015, b - 0.015, 0.03, 0.03, 0.03, TOP - 0.03, WHITE, { color: HALDI.wood });
-        iso.at([A + 0.015, b + 0.015, TOP - 0.02], (s, [x, y], u) => {
-          for (let k = 0; k < 13; k++) s.blob(x + Math.sin(k * 1.3) * 0.008 * u, y + k * 0.045 * u, 0.01 * u, 0.009 * u, tint(MARIGOLD[k % 3]), { w: 1, mask: true });
-        });
-      };
-      post(B0);
-      iso.box(A - 0.022, B0 - 0.04, TOP, 0.044, B1 - B0 + 0.08, 0.035, WHITE, { color: HALDI.wood });
-      for (let b = B0 + 0.04; b < B1 - 0.02; b += 0.05)
-        iso.at([A + 0.02, b, TOP], (s, [x, y], u) => {
-          const L = (0.08 + ((Math.round(b * 100) * 7) % 4) * 0.015) * u;
-          s.line(x, y, x, y + L, { w: 1, mask: true });
-          for (let yy = 0.012 * u; yy < L; yy += 0.02 * u) s.blob(x, y + yy, 0.009 * u, 0.008 * u, tint(MARIGOLD[Math.round(yy * 300) % 3]), { w: 1, mask: true });
-        });
-      // ropes and a seat with a backrest and cushions
-      const SZ = 0.17;
-      const S0 = B0 + 0.07;
-      const S1 = B1 - 0.07;
-      for (const b of [S0, S1]) {
-        iso.line([A - 0.04, b, TOP], [A - 0.04, b, SZ + 0.03], { w: 1.4 });
-        iso.line([A + 0.04, b, TOP], [A + 0.04, b, SZ + 0.03], { w: 1.4 });
-      }
-      iso.box(A - 0.06, S0 - 0.01, SZ, 0.12, S1 - S0 + 0.02, 0.03, WHITE, { color: HALDI.wood });
-      iso.box(A - 0.06, S0 - 0.01, SZ + 0.03, 0.02, S1 - S0 + 0.02, 0.1, WHITE, { color: HALDI.wood });
-      iso.box(A - 0.04, S0 + 0.01, SZ + 0.03, 0.09, S1 - S0 - 0.02, 0.03, WHITE, { color: HALDI.accent });
-      iso.box(A - 0.04, S0 + 0.03, SZ + 0.06, 0.03, 0.08, 0.07, WHITE, { color: HALDI.cushion });
-      iso.box(A - 0.04, S1 - 0.11, SZ + 0.06, 0.03, 0.08, 0.07, WHITE, { color: MARIGOLD[1] });
-      post(B1);
-    },
-    (iso) => {
-      // a brass thali with bowls of haldi paste, rose water and petals
-      iso.cyl(0.66, 0.4, 0, 0.11, 0.015, WHITE, { color: HALDI.brass });
-      for (const [a, b, r, c] of [
-        [0.63, 0.36, 0.035, HALDI.paste],
-        [0.7, 0.38, 0.03, "#f7a8a0"],
-        [0.66, 0.45, 0.03, HALDI.paste],
+      // a pair of clay matkas heaped with marigolds, standing against the walls
+      for (const [a, b, r] of [
+        [0.1, 0.12, 0.08],
+        [0.1, 0.3, 0.06],
+        [0.14, 0.82, 0.07],
       ] as const) {
-        iso.cyl(a, b, 0.015, r * 0.65, 0.03, WHITE, { r2: r, color: HALDI.brass });
-        iso.disc(a, b, 0.045, r * 0.8, tint(c), { w: 1.2 });
+        iso.cyl(a, b, 0, r * 0.8, r * 1.1, WHITE, { r2: r, color: HALDI.pot });
+        iso.cyl(a, b, r * 1.1, r, r * 0.35, WHITE, { r2: r * 0.8, color: HALDI.pot });
+        iso.at([a, b, r * 1.45], (s, [x, y], u) => {
+          for (let k = 0; k < 6; k++) s.blob(x + (k - 2.5) * r * 0.3 * u, y - (k % 2) * 0.012 * u, 0.02 * u, 0.017 * u, tint(MARIGOLD[k % 3]), { w: 1.2, mask: true });
+        });
       }
-      // a kalash beside it
-      iso.cyl(0.8, 0.5, 0, 0.035, 0.08, WHITE, { r2: 0.025, color: HALDI.brass });
-      iso.at([0.8, 0.5, 0.08], (s, [x, y], u) => {
-        for (const r of [-0.9, 0, 0.9]) almondLeaf(s, x + r * 0.014 * u, y - 0.014 * u, 0.016 * u, r, LEAF, true);
-        s.blob(x, y - 0.024 * u, 0.015 * u, 0.015 * u, tint("#c9a27a"), { w: 1.3, mask: true });
-      });
+      // a low wooden chowki holding a brass thali of haldi, bowls of rose water and a kalash
+      iso.box(0.3, 0.1, 0, 0.22, 0.22, 0.09, WHITE, { color: HALDI.wood });
+      iso.cyl(0.41, 0.21, 0.09, 0.09, 0.012, WHITE, { color: HALDI.brass });
+      iso.disc(0.41, 0.21, 0.102, 0.065, tint(HALDI.paste), { w: 1.2 });
+      iso.cyl(0.36, 0.16, 0.09, 0.022, 0.03, WHITE, { r2: 0.03, color: HALDI.brass });
+      iso.cyl(0.47, 0.27, 0.09, 0.022, 0.03, WHITE, { r2: 0.03, color: HALDI.brass });
+    },
+    (iso) => {
+      // a camel in its festival blanket, standing as a flat pop-up
+      const A = 0.66;
+      const B = 0.52;
+      const at = (dx: number, z: number): [number, number, number] => [A + dx * 0.7071, B - dx * 0.7071, z];
+      iso.p(at(-0.33, 0));
+      iso.p(at(0.4, 0));
+      iso.p(at(0, 0.6));
+      iso.at([A, B, 0], (s, [x, y], u) => camel(s, x, y, 0.5 * u, 1, true));
+    },
+    (iso) => {
+      // a ring of diyas on the floor in front
+      for (let k = 0; k < 7; k++) {
+        const a = (k / 7) * Math.PI * 2;
+        iso.at([0.6 + Math.cos(a) * 0.12, 0.86 + Math.sin(a) * 0.1, 0], (s, [x, y], u) => diya(s, x, y, 0.05 * u));
+      }
     },
   ]),
 };
@@ -454,79 +399,65 @@ const wedding: Room = {
   },
   popups: isoLayers([
     (iso) => {
-      // mandap, back half: three pillars on stepped bases with kalash pots, and the two back
-      // sides hung with scalloped fabric and marigolds
-      for (const [a, b] of [
-        [0.22, 0.22],
-        [0.74, 0.22],
-        [0.22, 0.74],
-      ])
-        mandapPillar(iso, a, b);
-      mandapSide(iso, [0.22, 0.22], [0.74, 0.22]);
-      mandapSide(iso, [0.22, 0.22], [0.22, 0.74]);
+      // a chhatri mandap: four gold pillars under a maroon slab, a golden dome and marigold fringes
+      const P = [0.2, 0.76];
+      const TOP = 0.6;
+      const pillar = (a: number, b: number) => {
+        iso.box(a - 0.04, b - 0.04, 0, 0.08, 0.08, 0.04, WHITE, { color: WED.pillar });
+        iso.box(a - 0.025, b - 0.025, 0.04, 0.05, 0.05, TOP - 0.06, WHITE, { color: WED.pillar });
+        iso.box(a - 0.04, b - 0.04, TOP - 0.02, 0.08, 0.08, 0.03, WHITE, { color: WED.pillar });
+      };
+      pillar(P[0], P[0]);
+      pillar(P[1], P[0]);
+      pillar(P[0], P[1]);
+      // the havan kund at the centre
+      iso.box(0.38, 0.38, 0, 0.2, 0.2, 0.04, WHITE, { color: "#e2c49a" });
+      iso.box(0.42, 0.42, 0.04, 0.12, 0.12, 0.04, WHITE, { color: "#d9b27c" });
+      iso.at([0.48, 0.48, 0.08], (s, [x, y], u) => {
+        s.glow(x, y - 0.03 * u, 0.09 * u, "#ffcf5a", 0.6);
+        diya(s, x, y, 0.07 * u);
+      });
+      // two low seats for the couple
+      iso.box(0.28, 0.52, 0, 0.1, 0.1, 0.05, WHITE, { color: RAJ.rani });
+      iso.box(0.56, 0.3, 0, 0.1, 0.1, 0.05, WHITE, { color: RAJ.turmeric });
     },
     (iso) => {
-      // the sacred fire on its stepped kund, two seats, a brass plate of offerings
-      iso.box(0.38, 0.38, 0, 0.18, 0.18, 0.035, WHITE, { color: "#e2c49a" });
-      iso.box(0.405, 0.405, 0.035, 0.13, 0.13, 0.035, WHITE, { color: "#efd6ae" });
-      iso.box(0.43, 0.43, 0.07, 0.08, 0.08, 0.03, WHITE, { color: "#e2c49a" });
-      iso.at([0.47, 0.47, 0.1], (s, [x, y], u) => {
-        if (look.color) s.glow(x, y - 0.1 * u, 0.24 * u, "#ffb347", 0.65);
-        const outer = soft(
-          [
-            [x - 0.07 * u, y],
-            [x - 0.055 * u, y - 0.1 * u],
-            [x - 0.02 * u, y - 0.15 * u],
-            [x - 0.005 * u, y - 0.23 * u],
-            [x + 0.03 * u, y - 0.13 * u],
-            [x + 0.05 * u, y - 0.17 * u],
-            [x + 0.07 * u, y],
-          ],
-          2,
-        );
-        s.shape(outer, tint("#ffcf5a"), { mask: true, w: 1.6 });
-        s.shape(
-          soft(
-            [
-              [x - 0.035 * u, y],
-              [x - 0.01 * u, y - 0.12 * u],
-              [x + 0.035 * u, y],
-            ],
-            2,
-          ),
-          tint("#f6a99a"),
-          { mask: true, w: 1.2 },
-        );
+      const P = [0.2, 0.76];
+      const TOP = 0.6;
+      const pillar = (a: number, b: number) => {
+        iso.box(a - 0.04, b - 0.04, 0, 0.08, 0.08, 0.04, WHITE, { color: WED.pillar });
+        iso.box(a - 0.025, b - 0.025, 0.04, 0.05, 0.05, TOP - 0.06, WHITE, { color: WED.pillar });
+        iso.box(a - 0.04, b - 0.04, TOP - 0.02, 0.08, 0.08, 0.03, WHITE, { color: WED.pillar });
+      };
+      pillar(P[1], P[1]);
+      // the roof: a maroon slab edged in gold, with a ribbed dome and finial above it
+      iso.box(0.15, 0.15, TOP + 0.01, 0.66, 0.66, 0.04, WHITE, { color: RAJ.maroon });
+      iso.box(0.13, 0.13, TOP + 0.05, 0.7, 0.7, 0.015, WHITE, { color: WED.pillar });
+      iso.p([0.48, 0.48, TOP + 0.4]);
+      iso.at([0.48, 0.48, TOP + 0.065], (s, [x, y], u) => {
+        const w = 0.2 * u;
+        s.shape(s.ellipsePts(x, y, w * 1.12, 0.07 * u, 0, Math.PI * 2, 20), tint(RAJ.maroon), { w: 1.8, mask: true });
+        const dome = s.ellipsePts(x, y, w, 0.2 * u, Math.PI, Math.PI * 2, 16);
+        s.shape(dome, tint(RAJ.gold), { w: 2, mask: true });
+        for (const k of [-0.6, -0.3, 0, 0.3, 0.6]) s.stroke(s.ellipsePts(x, y, w * Math.abs(k) + 0.0001, 0.2 * u, Math.PI, Math.PI * 2, 8), { w: 1, alpha: 0.6, mask: true });
+        s.line(x, y - 0.2 * u, x, y - 0.27 * u, { w: 1.8, mask: true });
+        s.blob(x, y - 0.285 * u, 0.012 * u, 0.016 * u, tint(RAJ.maroon), { w: 1.3, mask: true });
       });
-      cushion(iso, 0.6, 0.34, 0.12, WED.seat);
-      cushion(iso, 0.34, 0.6, 0.12, WED.seat);
-      iso.cyl(0.6, 0.6, 0, 0.05, 0.015, WHITE, { r2: 0.06, color: GOLD });
-      iso.at([0.6, 0.6, 0.015], (s, [x, y], u) => {
-        for (const [dx, dy, c] of [
-          [-0.02, -0.005, MARIGOLD[0]],
-          [0.018, -0.008, "#f6b7aa"],
-          [0, -0.02, MARIGOLD[1]],
-        ] as const)
-          s.blob(x + dx * u, y + dy * u, 0.012 * u, 0.01 * u, tint(c), { w: 1.2, mask: true });
-      });
-    },
-    (iso) => {
-      // front half: the fourth pillar, the two front sides and a peaked canopy on top
-      mandapPillar(iso, 0.74, 0.74);
-      mandapSide(iso, [0.74, 0.22], [0.74, 0.74]);
-      mandapSide(iso, [0.22, 0.74], [0.74, 0.74]);
-      const H = MANDAP_H;
-      const apex: [number, number, number] = [0.48, 0.48, H + 0.2];
-      iso.face([[0.74, 0.22, H], [0.74, 0.74, H], apex], tint(WED.drapeLit), { w: 2.2 });
-      iso.face([[0.22, 0.74, H], [0.74, 0.74, H], apex], tint(WED.drape), { w: 2.2 });
-      for (const t of [0.33, 0.66]) {
-        iso.line([0.74, 0.22 + 0.52 * t, H], apex, { w: 1, alpha: 0.55 });
-        iso.line([0.22 + 0.52 * t, 0.74, H], apex, { w: 1, alpha: 0.55 });
+      // marigold laris hanging from the roof's front edges
+      for (const b of [0.26, 0.38, 0.5, 0.62, 0.74])
+        iso.at([0.81, b, TOP], (s, [x, y], u) => {
+          const L = 0.11 * u;
+          s.line(x, y, x, y + L, { w: 1, mask: true });
+          for (let yy = 0.012 * u; yy < L; yy += 0.02 * u) s.blob(x, y + yy, 0.009 * u, 0.008 * u, tint(MARIGOLD[Math.round(yy * 300) % 3]), { w: 1, mask: true });
+        });
+      // a pair of brass kalash by the front pillar
+      for (const [a, b] of [[0.9, 0.62], [0.62, 0.9]] as const) {
+        iso.cyl(a, b, 0, 0.03, 0.08, WHITE, { r2: 0.045, color: HALDI.brass });
+        iso.at([a, b, 0.08], (s, [x, y], u) => {
+          for (const r of [-0.9, 0, 0.9]) almondLeaf(s, x + r * 0.014 * u, y - 0.014 * u, 0.016 * u, r, LEAF, true);
+          s.blob(x, y - 0.024 * u, 0.015 * u, 0.015 * u, tint("#c9a27a"), { w: 1.3, mask: true });
+        });
       }
-      iso.at(apex, (s, [x, y], u) => {
-        s.blob(x, y - 0.02 * u, 0.02 * u, 0.025 * u, tint(GOLD), { w: 1.6, mask: true });
-        s.line(x, y - 0.045 * u, x, y - 0.07 * u, { w: 1.6, mask: true });
-      });
     },
   ]),
 };
@@ -654,112 +585,41 @@ const reception: Room = {
   },
   popups: isoLayers([
     (iso) => {
-      // cake table in the corner with a three-tier cake and a cake topper
-      iso.cyl(0.14, 0.14, 0, 0.1, 0.22, WHITE, { color: REC.cloth });
-      iso.cyl(0.14, 0.14, 0.22, 0.07, 0.07, WHITE, { color: REC.cake });
-      iso.cyl(0.14, 0.14, 0.29, 0.052, 0.06, WHITE, { color: REC.cake });
-      iso.cyl(0.14, 0.14, 0.35, 0.036, 0.05, WHITE, { color: REC.cake });
-      iso.at([0.14, 0.14, 0.4], (s, [x, y], u) => {
-        s.blob(x - 0.01 * u, y - 0.012 * u, 0.012 * u, 0.012 * u, tint("#f6b7aa"), { w: 1.3, mask: true });
-        s.blob(x + 0.012 * u, y - 0.008 * u, 0.01 * u, 0.01 * u, tint(REC.blush), { w: 1.3, mask: true });
-        s.line(x - 0.008 * u, y - 0.02 * u, x - 0.008 * u, y - 0.06 * u, { w: 1.2, mask: true });
-        s.line(x + 0.008 * u, y - 0.02 * u, x + 0.008 * u, y - 0.06 * u, { w: 1.2, mask: true });
-        s.text("t&z", x, y - 0.07 * u, 0.026 * u);
-        s.maskFill(s.rectPts(x - 0.022 * u, y - 0.085 * u, 0.044 * u, 0.03 * u));
+      // a maharaja's throne in the corner: cushioned seat, tall gold back with a cusped arch
+      iso.box(0.1, 0.1, 0, 0.36, 0.3, 0.14, WHITE, { color: RAJ.maroon });
+      iso.box(0.1, 0.1, 0.14, 0.34, 0.28, 0.04, WHITE, { color: RAJ.rani });
+      iso.box(0.1, 0.1, 0.18, 0.05, 0.28, 0.3, WHITE, { color: RAJ.gold });
+      iso.p([0.12, 0.24, 0.62]);
+      iso.at([0.125, 0.24, 0.3], (s, [x, y], u) => {
+        const arch = cuspArch(x - 0.12 * u, x + 0.12 * u, y + 0.1 * u, y - 0.04 * u, y - 0.2 * u, 3, 30);
+        s.shape(arch, tint(RAJ.maroon), { w: 1.6, mask: true });
+        s.circle(x, y - 0.03 * u, 0.03 * u, { w: 1.3, mask: true });
       });
-      // the couple's loveseat under the floral arch
-      iso.box(0.04, 0.36, 0, 0.16, 0.3, 0.12, WHITE, { color: REC.sofa });
-      iso.box(0.03, 0.34, 0.12, 0.05, 0.34, 0.2, WHITE, { color: REC.sofa });
-      iso.box(0.04, 0.33, 0, 0.16, 0.04, 0.19, WHITE, { color: REC.sofa });
-      iso.box(0.04, 0.65, 0, 0.16, 0.04, 0.19, WHITE, { color: REC.sofa });
-      iso.box(0.08, 0.4, 0.12, 0.05, 0.1, 0.08, WHITE, { color: REC.blush });
-      iso.box(0.08, 0.53, 0.12, 0.05, 0.1, 0.08, WHITE, { color: REC.champagne });
-      // a champagne tower on a little round table by the right wall
-      iso.cyl(0.42, 0.12, 0, 0.07, 0.2, WHITE, { r2: 0.07, color: REC.cloth });
-      iso.at([0.42, 0.12, 0.2], (s, [x, y], u) => {
-        const coupe = (cx: number, cy: number) => {
-          const bowl: Pt[] = [[cx - 0.016 * u, cy - 0.022 * u], [cx + 0.016 * u, cy - 0.022 * u], [cx + 0.004 * u, cy - 0.008 * u], [cx - 0.004 * u, cy - 0.008 * u]];
-          s.shape(bowl, tint(REC.champagne), { mask: true, w: 1.2 });
-          s.line(cx, cy - 0.008 * u, cx, cy, { w: 1.1, mask: true });
-          s.line(cx - 0.008 * u, cy, cx + 0.008 * u, cy, { w: 1.1, mask: true });
-        };
-        for (const [n, row] of [
-          [4, 0],
-          [3, 1],
-          [2, 2],
-          [1, 3],
-        ])
-          for (let i = 0; i < n; i++) coupe(x + (i - (n - 1) / 2) * 0.034 * u, y - row * 0.026 * u);
-        for (let k = 0; k < 4; k++) s.circle(x + (k - 1.5) * 0.02 * u, y - 0.12 * u - (k % 2) * 0.01 * u, 0.003 * u, { w: 1, mask: true });
-      });
-      // gift table with wrapped presents
-      iso.box(0.62, 0.04, 0, 0.3, 0.14, 0.2, WHITE, { color: REC.cloth });
-      const gifts: [number, number, number, number, number][] = [
-        [0.64, 0.06, 0.08, 0.08, 0.08],
-        [0.74, 0.07, 0.07, 0.07, 0.11],
-        [0.83, 0.06, 0.07, 0.08, 0.06],
-      ];
-      gifts.forEach(([a, b, da, db, h], i) => {
-        iso.box(a, b, 0.2, da, db, h, WHITE, { color: REC.gift[i] });
-        iso.line([a + da / 2, b, 0.2 + h], [a + da / 2, b + db, 0.2 + h], { w: 1.6 });
-        iso.line([a, b + db / 2, 0.2 + h], [a + da, b + db / 2, 0.2 + h], { w: 1.6 });
-        iso.line([a + da / 2, b + db, 0.2], [a + da / 2, b + db, 0.2 + h], { w: 1.6 });
-        iso.at([a + da / 2, b + db / 2, 0.2 + h], (s, [x, y], u) => {
-          s.stroke(s.ellipsePts(x - 0.012 * u, y - 0.008 * u, 0.012 * u, 0.008 * u), { closed: true, w: 1.3, mask: true });
-          s.stroke(s.ellipsePts(x + 0.012 * u, y - 0.008 * u, 0.012 * u, 0.008 * u), { closed: true, w: 1.3, mask: true });
-        });
-      });
+      // two tall brass lamp stands either side
+      for (const b of [0.06, 0.46])
+        for (const a of [0.1]) {
+          iso.cyl(a, b, 0, 0.03, 0.04, WHITE, { r2: 0.025, color: HALDI.brass });
+          iso.cyl(a, b, 0.04, 0.008, 0.28, WHITE, { color: HALDI.brass });
+          iso.at([a, b, 0.32], (s, [x, y], u) => diya(s, x, y, 0.05 * u));
+        }
     },
     (iso) => {
-      // round dinner table with gold chairs, plates, glasses and a tall centrepiece
-      const TX = 0.62;
-      const TY = 0.74;
-      const chair = (a: number, b: number, ang: number) => {
-        const ca = TX + Math.cos(ang) * 0.21;
-        const cb = TY + Math.sin(ang) * 0.21;
-        for (const [da, db] of [
-          [-0.025, -0.025],
-          [0.025, -0.025],
-          [-0.025, 0.025],
-          [0.025, 0.025],
-        ])
-          iso.line([ca + da, cb + db, 0], [ca + da, cb + db, 0.13], { w: 1.8 });
-        iso.box(ca - 0.032, cb - 0.032, 0.13, 0.064, 0.064, 0.018, WHITE, { color: GOLD });
-        // back on the side away from the table
-        const ba = ca + Math.cos(ang) * 0.03;
-        const bb = cb + Math.sin(ang) * 0.03;
-        const pa = -Math.sin(ang) * 0.028;
-        const pb = Math.cos(ang) * 0.028;
-        iso.box(Math.min(ba - pa, ba + pa) - 0.006, Math.min(bb - pb, bb + pb) - 0.006, 0.148, Math.abs(2 * pa) + 0.012, Math.abs(2 * pb) + 0.012, 0.15, WHITE, { color: GOLD });
-        return [a, b];
-      };
-      // chairs behind the table first
-      chair(0, 0, Math.PI * 1.25);
-      chair(0, 0, Math.PI * 0.75);
-      chair(0, 0, Math.PI * 1.75);
-      // the table
-      iso.cyl(TX, TY, 0, 0.15, 0.25, WHITE, { r2: 0.14, color: REC.cloth });
-      for (const a of [0.2, 1.8, 3.4, 5.0]) {
-        const px = TX + Math.cos(a) * 0.095;
-        const py = TY + Math.sin(a) * 0.095;
-        iso.disc(px, py, 0.252, 0.028, WHITE, { w: 1.3 });
-        iso.cyl(px + Math.cos(a + 0.6) * 0.04, py + Math.sin(a + 0.6) * 0.04, 0.25, 0.008, 0.035, WHITE, { r2: 0.012, color: REC.glass });
+      // a low round feast table on the dhurrie: a brass thali of sweets, bowls and a jug
+      iso.cyl(0.64, 0.6, 0, 0.17, 0.1, WHITE, { color: REC.cloth });
+      iso.disc(0.64, 0.6, 0.1, 0.15, tint(RAJ.turmeric), { w: 1.4 });
+      iso.disc(0.64, 0.6, 0.102, 0.09, tint(HALDI.brass), { w: 1.2 });
+      for (let k = 0; k < 6; k++) {
+        const a = (k / 6) * Math.PI * 2;
+        iso.disc(0.64 + Math.cos(a) * 0.115, 0.6 + Math.sin(a) * 0.115, 0.102, 0.024, tint([RAJ.rani, RAJ.saffron, RAJ.emerald][k % 3]), { w: 1.1 });
       }
-      iso.cyl(TX, TY, 0.25, 0.014, 0.1, WHITE, { r2: 0.02, color: REC.glass });
-      iso.at([TX, TY, 0.35], (s, [x, y], u) => {
-        for (const [dx, dy] of [
-          [-0.03, 0],
-          [0.03, -0.005],
-          [0, -0.03],
-          [-0.015, -0.018],
-          [0.018, -0.022],
-        ])
-          flower(s, x + dx * u, y + dy * u, 0.011 * u, REC.blush, true);
-        almondLeaf(s, x - 0.05 * u, y + 0.01 * u, 0.018 * u, -1.2, LEAF, true);
-        almondLeaf(s, x + 0.05 * u, y + 0.01 * u, 0.018 * u, 1.2, LEAF, true);
-      });
-      // the chair in front
-      chair(0, 0, Math.PI * 0.25);
+      iso.cyl(0.64, 0.6, 0.1, 0.022, 0.06, WHITE, { r2: 0.03, color: HALDI.brass });
+      // floor cushions round the table
+      for (const [a, b, c] of [
+        [0.4, 0.58, RAJ.rani],
+        [0.64, 0.86, RAJ.turmeric],
+        [0.88, 0.62, RAJ.peacock],
+      ] as const)
+        iso.box(a - 0.07, b - 0.07, 0, 0.14, 0.14, 0.05, WHITE, { color: c });
     },
   ]),
 };

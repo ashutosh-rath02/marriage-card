@@ -396,19 +396,20 @@ export function elephant(s: Sketch, x: number, y: number, size: number, dir = 1,
 }
 
 /** A saddled camel (side view). (x, y) = ground under its middle, `size` = body length. */
-export function camel(s: Sketch, x: number, y: number, size: number, dir = 1) {
+export function camel(s: Sketch, x: number, y: number, size: number, dir = 1, mask = false) {
   const skin = tint("#e9c58c");
   const dark = tint("#d2ad74");
   const Q = (pts: Pt[]) => place(pts, x, y, size, dir);
   const piece = (pts: Pt[], c: string | null, w = 1.8) => {
     if (c) s.sticker(pts, 1, 0.1, c);
-    s.stroke(pts, { closed: true, w });
+    if (mask) s.maskFill(pts);
+    s.stroke(pts, { closed: true, w, mask });
   };
   const ell = (cx: number, cy: number, rx: number, ry: number, rot = 0) => place(s.ellipsePts(0, 0, rx, ry, 0, Math.PI * 2, 24), cx, cy, 1, 1, rot);
   const leg = (lx: number, c: string) => piece(Q([[lx - 0.045, -0.42], [lx + 0.045, -0.42], [lx + 0.03, -0.22], [lx + 0.045, -0.19], [lx + 0.03, -0.01], [lx + 0.05, 0], [lx - 0.04, 0], [lx - 0.03, -0.02], [lx - 0.035, -0.2], [lx - 0.05, -0.23]]), c, 1.6);
   leg(-0.28, dark);
   leg(0.2, dark);
-  s.stroke(curve(Q([[-0.4, -0.55], [-0.46, -0.45], [-0.45, -0.32]]), false, 6), { w: 1.8 });
+  s.stroke(curve(Q([[-0.4, -0.55], [-0.46, -0.45], [-0.45, -0.32]]), false, 6), { w: 1.8, mask });
   piece(Q(ell(-0.04, -0.55, 0.4, 0.18)), skin, 2);
   piece(Q(ell(-0.14, -0.74, 0.11, 0.1)), skin, 1.8);
   leg(-0.36, skin);
@@ -416,16 +417,16 @@ export function camel(s: Sketch, x: number, y: number, size: number, dir = 1) {
   piece(Q(thick([[0.22, -0.6], [0.3, -0.75], [0.36, -0.93], [0.42, -1.04]], 0.15, 0.08)), skin, 1.8);
   piece(Q(ell(0.5, -1.04, 0.12, 0.055, 0.25)), skin, 1.8);
   const [ex, ey] = Q([[0.47, -1.07]])[0];
-  s.circle(ex, ey, size * 0.011, { w: 1.4 });
+  s.circle(ex, ey, size * 0.011, { w: 1.4, mask });
   // saddle blanket, gold band, tassels, neck bell
   const blanket = Q([[-0.32, -0.66], [0.14, -0.66], [0.2, -0.5], [0.18, -0.34], [-0.3, -0.34], [-0.36, -0.5]]);
   piece(blanket, tint(RAJ.rani), 1.8);
   piece(Q([[-0.33, -0.44], [0.19, -0.44], [0.19, -0.4], [-0.33, -0.4]]), tint(RAJ.turmeric), 1.1);
-  tassels(s, Q([[-0.28, -0.34], [-0.16, -0.34], [-0.04, -0.34], [0.08, -0.34], [0.16, -0.34]]), size * 0.035);
+  tassels(s, Q([[-0.28, -0.34], [-0.16, -0.34], [-0.04, -0.34], [0.08, -0.34], [0.16, -0.34]]), size * 0.035, mask);
   const [nx, ny] = Q([[0.31, -0.74]])[0];
-  s.blob(nx, ny, size * 0.03, size * 0.03, tint(RAJ.turmeric), { w: 1.3 });
+  s.blob(nx, ny, size * 0.03, size * 0.03, tint(RAJ.turmeric), { w: 1.3, mask });
   const [hx, hy] = Q([[-0.14, -0.84]])[0];
-  s.blob(hx, hy, size * 0.035, size * 0.035, tint(RAJ.gold), { w: 1.3 });
+  s.blob(hx, hy, size * 0.035, size * 0.035, tint(RAJ.gold), { w: 1.3, mask });
 }
 
 /** Colour a hex a touch darker (for the far legs). */
