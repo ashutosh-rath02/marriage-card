@@ -1,4 +1,4 @@
-# unfold
+# Shubh Vivah: a Rajasthani wedding card
 
 > **Branch `wedding-invite`:** the book as a wedding invitation. Each page is one event (haldi,
 > the party, the wedding, reception) with an invite card pinned in the scene; tap it
@@ -7,7 +7,7 @@
 > `lib/invite.ts`. Personal links: `?to=the%20sharma%20family` writes the guest's name on the cover.
 > RSVPs are only kept in the browser for now.
 
-A journal house: a hand-drawn pop-up book whose rooms fold open one at a time.
+A hand-drawn pop-up wedding card whose rooms (haldi, sangeet, the phere, reception) fold open one at a time. Built on the open-source "unfold" pop-up book.
 
 - **Full-circle book** — pages radiate from the spine all the way round, like a carousel pop-up
   book. The room in front opens to a right angle with its creased floor flat and its pop-up

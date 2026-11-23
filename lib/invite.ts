@@ -602,55 +602,70 @@ const reception: Room = {
         const [px, py] = F(a, b);
         s.blob(px, py, 0.008, 0.006, tint(REC.blush), { w: 1 });
       }
-    s.shadow([F(0.02, 0.1), F(0.28, 0.1), F(0.28, 0.5), F(0.02, 0.5)], 0.22, 14);
+    s.shadow([F(0.02, 0.05), F(0.26, 0.05), F(0.26, 0.82), F(0.02, 0.82)], 0.2, 14);
+    s.shadow(s.ellipsePts(...F(0.58, 0.5), 0.14, 0.14), 0.2, 12);
+    s.shadow(s.ellipsePts(...F(0.8, 0.74), 0.14, 0.14), 0.2, 12);
   },
   popups: isoLayers([
     (iso) => {
-      // a small raised stage in the corner against the left wall (s = along the wall, d = out from it)
-      const k = 0.58;
-      const o = 0.08; // gap from the corner
-      const X = (s: number) => o + s * k;
-      const box = (s: number, d: number, z: number, ds: number, dd: number, dz: number, c: string) => iso.box(d * k, X(s), z * k, dd * k, ds * k, dz * k, WHITE, { color: c });
+      // a low, wide stage against the left wall (s = along the wall, d = out from it)
+      const ks = 0.95;
+      const kd = 0.5;
+      const kz = 0.4;
+      const o = 0.04;
+      const X = (s: number) => o + s * ks;
+      const box = (s: number, d: number, z: number, ds: number, dd: number, dz: number, c: string) => iso.box(d * kd, X(s), z * kz, dd * kd, ds * ks, dz * kz, WHITE, { color: c });
       box(0.08, 0.04, 0, 0.64, 0.4, 0.07, RAJ.gold);
       box(0.08, 0.44, 0, 0.64, 0.07, 0.035, RAJ.gold);
       box(0.12, 0.08, 0.07, 0.56, 0.32, 0.012, RAJ.maroon);
       // the backdrop: a cusped gold arch on the wall behind, with a rani panel, a sun face and a marigold garland
       const arch = (pad: number, top: number): V3[] => {
-        const pts: V3[] = [[0.045 * k, X(0.1 + pad), 0.07 * k]];
+        const pts: V3[] = [[0.045 * kd, X(0.1 + pad), 0.07 * kz]];
         for (let i = 0; i <= 28; i++) {
           const q = i / 28;
-          pts.push([0.045 * k, X(0.1 + pad + (0.6 - 2 * pad) * q), (0.34 + (top - 0.34) * roofLift(q)) * k]);
+          pts.push([0.045 * kd, X(0.1 + pad + (0.6 - 2 * pad) * q), (0.34 + (top - 0.34) * roofLift(q)) * kz]);
         }
-        pts.push([0.045 * k, X(0.7 - pad), 0.07 * k]);
+        pts.push([0.045 * kd, X(0.7 - pad), 0.07 * kz]);
         return pts;
       };
-      iso.face(arch(0, 0.86), tint(RAJ.gold), { w: 2 });
-      iso.face(arch(0.05, 0.8), tint(RAJ.rani), { w: 1.4 });
-      iso.face(arch(0.1, 0.72), tint(RAJ.maroon), { w: 1.2 });
-      iso.at([0.045 * k, X(0.4), 0.48 * k], (s, [x, y], u) => surya(s, x, y - 0.02 * u, 0.035 * u));
-      for (let i = 0; i <= 14; i++) {
-        const q = i / 14;
-        iso.at([0.045 * k, X(0.1 + 0.6 * q), (0.34 + 0.52 * roofLift(q) + 0.005) * k], (s, [x, y], u) => s.blob(x, y, 0.008 * u, 0.008 * u, tint(MARIGOLD[i % 3]), { w: 1, mask: true }));
+      iso.face(arch(0, 0.9), tint(RAJ.gold), { w: 2 });
+      iso.face(arch(0.05, 0.84), tint(RAJ.rani), { w: 1.4 });
+      iso.face(arch(0.1, 0.76), tint(RAJ.maroon), { w: 1.2 });
+      iso.at([0.045 * kd, X(0.4), 0.42 * kz], (s, [x, y], u) => surya(s, x, y - 0.015 * u, 0.04 * u));
+      for (let i = 0; i <= 18; i++) {
+        const q = i / 18;
+        iso.at([0.045 * kd, X(0.1 + 0.6 * q), (0.34 + 0.56 * roofLift(q) + 0.005) * kz], (s, [x, y], u) => s.blob(x, y, 0.009 * u, 0.009 * u, tint(MARIGOLD[i % 3]), { w: 1, mask: true }));
       }
-      // two cushioned chairs side by side
-      for (const a of [0.2, 0.44]) {
+      // three cushioned seats side by side
+      for (const a of [0.12, 0.31, 0.5]) {
         box(a, 0.12, 0.082, 0.17, 0.2, 0.07, RAJ.maroon);
         box(a, 0.12, 0.152, 0.17, 0.04, 0.2, RAJ.maroon);
-        box(a - 0.02, 0.12, 0.082, 0.025, 0.2, 0.11, RAJ.gold);
-        box(a + 0.165, 0.12, 0.082, 0.025, 0.2, 0.11, RAJ.gold);
+        box(a - 0.015, 0.12, 0.082, 0.02, 0.2, 0.11, RAJ.gold);
+        box(a + 0.165, 0.12, 0.082, 0.02, 0.2, 0.11, RAJ.gold);
         box(a + 0.03, 0.17, 0.152, 0.11, 0.12, 0.03, RAJ.turmeric);
       }
+      // a mithai counter along the right wall under the invite card, with brass urns and sweets
+      iso.box(0.44, 0.03, 0, 0.48, 0.11, 0.13, WHITE, { color: REC.cloth });
+      iso.box(0.43, 0.025, 0.13, 0.5, 0.12, 0.012, WHITE, { color: RAJ.gold });
+      for (const a of [0.52, 0.68, 0.84]) {
+        iso.cyl(a, 0.085, 0.142, 0.026, 0.05, WHITE, { r2: 0.036, color: HALDI.brass });
+        iso.at([a, 0.085, 0.192], (s, [x, y], u) => {
+          for (let q = -1; q <= 1; q++) s.blob(x + q * 0.016 * u, y - 0.004 * u * Math.abs(q), 0.012 * u, 0.011 * u, tint([RAJ.saffron, RAJ.rani, RAJ.turmeric][q + 1]), { w: 1, mask: true });
+        });
+      }
+      iso.p([0.84, 0.085, 0.3]);
     },
     (iso) => {
-      // a pair of small brass urns of flowers at the stage's open end, and two lamp stands in front
-      const k = 0.58;
-      const o = 0.08;
-      for (const [d, s] of [[0.1, 0.78], [0.3, 0.78]] as const) {
-        const cd = d * k;
-        const cs = o + s * k;
-        iso.cyl(cd, cs, 0, 0.03, 0.08, WHITE, { r2: 0.042, color: HALDI.brass });
-        iso.cyl(cd, cs, 0.08, 0.042, 0.03, WHITE, { r2: 0.027, color: HALDI.brass });
-        iso.p([cd, cs, 0.24]);
+      // small brass urns of flowers at the open end of the stage, and two lamp stands in front of it
+      const ks = 0.95;
+      const kd = 0.5;
+      const o = 0.04;
+      for (const d of [0.1, 0.3]) {
+        const cd = d * kd;
+        const cs = o + 0.8 * ks;
+        iso.cyl(cd, cs, 0, 0.032, 0.08, WHITE, { r2: 0.044, color: HALDI.brass });
+        iso.cyl(cd, cs, 0.08, 0.044, 0.03, WHITE, { r2: 0.028, color: HALDI.brass });
+        iso.p([cd, cs, 0.26]);
         iso.at([cd, cs, 0.11], (sk, [x, y], u) => {
           for (let q = 0; q < 7; q++) {
             const ang = -Math.PI + (q / 6) * Math.PI;
@@ -659,12 +674,38 @@ const reception: Room = {
           sk.blob(x, y - 0.04 * u, 0.019 * u, 0.017 * u, tint(RAJ.rani), { w: 1.2, mask: true });
         });
       }
-      for (const s of [0.14, 0.66]) {
-        const cs = o + s * k;
-        iso.cyl(0.5 * k, cs, 0, 0.022, 0.02, WHITE, { r2: 0.016, color: HALDI.brass });
-        iso.cyl(0.5 * k, cs, 0.02, 0.006, 0.15, WHITE, { color: HALDI.brass });
-        iso.at([0.5 * k, cs, 0.17], (sk, [x, y], u) => diya(sk, x, y, 0.04 * u));
-        iso.p([0.5 * k, cs, 0.26]);
+      for (const s of [0.12, 0.74]) {
+        const cs = o + s * ks;
+        iso.cyl(0.3, cs, 0, 0.022, 0.02, WHITE, { r2: 0.016, color: HALDI.brass });
+        iso.cyl(0.3, cs, 0.02, 0.006, 0.17, WHITE, { color: HALDI.brass });
+        iso.at([0.3, cs, 0.19], (sk, [x, y], u) => diya(sk, x, y, 0.042 * u));
+        iso.p([0.3, cs, 0.29]);
+      }
+    },
+    (iso) => {
+      // two round feast tables with a brass thali, a centrepiece and cushion seats
+      for (const [a, b] of [[0.58, 0.5], [0.8, 0.74]] as const) {
+        iso.cyl(a, b, 0, 0.11, 0.15, WHITE, { color: REC.cloth });
+        iso.disc(a, b, 0.15, 0.11, tint(RAJ.maroon), { w: 1.3 });
+        iso.disc(a, b, 0.152, 0.07, tint(HALDI.brass), { w: 1.1 });
+        for (let q = 0; q < 5; q++) {
+          const ang = (q / 5) * Math.PI * 2;
+          iso.disc(a + Math.cos(ang) * 0.045, b + Math.sin(ang) * 0.045, 0.154, 0.014, tint([RAJ.rani, RAJ.saffron, RAJ.emerald][q % 3]), { w: 1 });
+        }
+        iso.cyl(a, b, 0.152, 0.012, 0.07, WHITE, { r2: 0.02, color: HALDI.brass });
+        iso.at([a, b, 0.222], (s, [x, y], u) => {
+          for (let q = -1; q <= 1; q++) flower(s, x + q * 0.016 * u, y - 0.008 * u * (2 - Math.abs(q)), 0.011 * u, [RAJ.rani, MARIGOLD[0], RAJ.rani][q + 1], true);
+        });
+        for (const [dx, dy, c] of [[-0.17, 0, RAJ.rani], [0.17, 0, RAJ.turmeric], [0, 0.17, RAJ.peacock], [0, -0.17, RAJ.saffron]] as const)
+          iso.box(a + dx - 0.045, b + dy - 0.045, 0, 0.09, 0.09, 0.045, WHITE, { color: c });
+      }
+      // marigold pots at the front corners
+      for (const [a, b] of [[0.92, 0.12], [0.18, 0.92]] as const) {
+        iso.cyl(a, b, 0, 0.04, 0.07, WHITE, { r2: 0.052, color: HALDI.pot });
+        iso.at([a, b, 0.07], (s, [x, y], u) => {
+          for (let q = 0; q < 6; q++) s.blob(x + (q - 2.5) * 0.014 * u, y - (q % 2) * 0.014 * u - 0.01 * u, 0.017 * u, 0.015 * u, tint(MARIGOLD[q % 3]), { w: 1.1, mask: true });
+        });
+        iso.p([a, b, 0.16]);
       }
     },
   ]),

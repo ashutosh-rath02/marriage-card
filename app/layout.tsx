@@ -5,8 +5,13 @@ import "@fontsource/yatra-one/400.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "unfold — a journal house",
-  description: "A pop-up book of rooms, drawn in blue ink.",
+  title: "Shubh Vivah · A Rajasthani Wedding Invitation",
+  description: "Padharo mhare desh: open the card and step into four rooms, from haldi to the reception.",
+  openGraph: {
+    title: "Shubh Vivah · You're invited",
+    description: "Padharo mhare desh: open the card and step into four rooms, from haldi to the reception.",
+    type: "website",
+  },
 };
 
 export const viewport: Viewport = {
