@@ -12,8 +12,8 @@ export type WeddingEvent = {
 };
 
 export const WEDDING = {
-  couple: ["mr x", "vishika"] as [string, string],
-  initials: "x & v",
+  couple: ["mr x", ""] as [string, string], // the bride's name is left out for now: add it in the edit panel
+  initials: "x",
   city: "jaipur",
   greeting: "padharo mhare desh",
   blessing: "shree ganeshaya namah",
@@ -100,9 +100,9 @@ export function currentEdits(): Edits {
 /** Change the card's wording (anything missing keeps its current value). */
 export function applyEdits(e: Edits) {
   if (clean(e.groom, 24)) WEDDING.couple[0] = clean(e.groom, 24).toLowerCase();
-  if (clean(e.bride, 24)) WEDDING.couple[1] = clean(e.bride, 24).toLowerCase();
+  if (e.bride !== undefined) WEDDING.couple[1] = clean(e.bride, 24).toLowerCase();
   const ini = (n: string) => (n.trim().split(/\s+/).pop() ?? "")[0] ?? "";
-  WEDDING.initials = `${ini(WEDDING.couple[0])} & ${ini(WEDDING.couple[1])}`;
+  WEDDING.initials = WEDDING.couple.map(ini).filter(Boolean).join(" & ");
   if (clean(e.city, 30)) WEDDING.city = clean(e.city, 30).toLowerCase();
   if (clean(e.hosts, 60)) WEDDING.hosts = clean(e.hosts, 60).toLowerCase();
   if (clean(e.greeting, 40)) WEDDING.greeting = clean(e.greeting, 40).toLowerCase();
@@ -143,6 +143,9 @@ export function decodeEdits(s: string): Edits | null {
   }
 }
 
+/** The names on the card, however many are filled in. */
+export const coupleNames = (sep = " & ") => WEDDING.couple.filter(Boolean).join(sep);
+
 export const eventByKey = (key: string) => WEDDING.events.find((e) => e.key === key);
 
 const d = (iso: string) => new Date(iso);
@@ -165,10 +168,10 @@ export function icsFor(ev: WeddingEvent) {
     "VERSION:2.0",
     "PRODID:-//unfold//rajasthani wedding invite//EN",
     "BEGIN:VEVENT",
-    `UID:${ev.key}-${WEDDING.couple.join("-")}@unfold`,
+    `UID:${ev.key}-${coupleNames("-")}@unfold`,
     `DTSTART:${stamp(ev.start)}`,
     `DTEND:${stamp(ev.end)}`,
-    `SUMMARY:${ev.name} · ${WEDDING.couple.join(" & ")}`,
+    `SUMMARY:${ev.name} · ${coupleNames(" & ")}`,
     `LOCATION:${ev.venue}, ${ev.address}`,
     `DESCRIPTION:dress code: ${ev.dress}`,
     "END:VEVENT",

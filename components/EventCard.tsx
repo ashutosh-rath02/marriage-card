@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { WEDDING, fmtDate, fmtTime, icsFor, type WeddingEvent } from "@/lib/wedding";
+import { WEDDING, coupleNames, fmtDate, fmtTime, icsFor, type WeddingEvent } from "@/lib/wedding";
 
 function downloadIcs(ev: WeddingEvent) {
   const blob = new Blob([icsFor(ev)], { type: "text/calendar" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = `${WEDDING.couple.join("-")}-${ev.key}.ics`;
+  a.download = `${coupleNames("-")}-${ev.key}.ics`;
   a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
@@ -38,7 +38,7 @@ export default function EventCard({ ev, onClose, onRsvp }: { ev: WeddingEvent; o
       </button>
       <article className={`ev-card ev-${ev.key}`}>
         <div className="ev-inner">
-          <div className="ev-hosts">{WEDDING.couple.join(" & ")} invite you to</div>
+          <div className="ev-hosts">{coupleNames()} {WEDDING.couple.filter(Boolean).length > 1 ? "invite" : "invites"} you to</div>
           <h2 className="ev-name">{ev.name}</h2>
           <div className="ev-tagline">{ev.tagline}</div>
           <div className="ev-rule" aria-hidden="true" />

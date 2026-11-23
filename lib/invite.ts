@@ -754,9 +754,18 @@ export function drawFrontCover(s: Sketch) {
   s.fill(inner, tint(RAJ.gold), { alpha: 0.28, jitter: 0 });
   chhatri(s, 0.5, 0.265, 0.12);
   surya(s, 0.5, 0.385, 0.04);
-  s.text(WEDDING.couple[0], 0.5, 0.49, 0.1 * Math.min(1, 9 / WEDDING.couple[0].length), { family: "Yatra One" });
-  s.text("weds", 0.5, 0.565, 0.036, { weight: 500 });
-  s.text(WEDDING.couple[1], 0.5, 0.64, 0.1 * Math.min(1, 9 / WEDDING.couple[1].length), { family: "Yatra One" });
+  const [groom, bride] = WEDDING.couple;
+  const fit = (n: string) => 0.1 * Math.min(1, 9 / Math.max(1, n.length));
+  if (bride) {
+    s.text(groom, 0.5, 0.49, fit(groom), { family: "Yatra One" });
+    s.text("weds", 0.5, 0.565, 0.036, { weight: 500 });
+    s.text(bride, 0.5, 0.64, fit(bride), { family: "Yatra One" });
+  } else {
+    // one name for now: it stands alone, with the invitation line beneath
+    s.text(groom, 0.5, 0.5, fit(groom) * 1.25, { family: "Yatra One" });
+    s.text("and family invite you", 0.5, 0.6, 0.036, { weight: 500 });
+    s.text("to celebrate a wedding", 0.5, 0.65, 0.036, { weight: 500 });
+  }
   // peacocks and lotuses flank the arch
   peacock(s, 0.16, 0.78, 0.2, 1);
   peacock(s, 0.84, 0.78, 0.2, -1);
